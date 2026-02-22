@@ -4,6 +4,8 @@ A production-grade API that automatically routes LLM prompts to the cheapest
 model capable of handling them. Saves up to 90%+ on inference costs without
 sacrificing response quality.
 
+**Project directory:** All code and commands below live in [`smart-router/`](smart-router/). After cloning, run commands from `smart-router/` (e.g. `cd smart-router`).
+
 ---
 
 ## The Problem
@@ -90,7 +92,7 @@ The classifier is evaluated on a labeled set of prompts:
 | Accuracy threshold | ≥ 80% |
 | Edge cases | Empty, long, non-English |
 
-Run the classifier tests to see the accuracy report:
+Run the classifier tests to see the accuracy report (from `smart-router/`):
 
 ```bash
 pytest tests/test_classifier.py -v -s
@@ -185,7 +187,7 @@ Auto-generated OpenAPI docs available at: `http://localhost:8000/docs`
 
 ## Running Tests
 
-**Unit tests** (no API keys; mocks for LLM calls):
+**Unit tests** (no API keys; mocks for LLM calls), from `smart-router/`:
 
 ```bash
 pytest tests/test_classifier.py tests/test_escalation.py -v
@@ -208,7 +210,7 @@ pytest tests/ -v -m "not integration"
 ## Dashboard
 
 The Streamlit dashboard shows live cost savings, model usage distribution,
-and projected savings at scale. Launch with:
+and projected savings at scale. From `smart-router/`: launch with:
 ```bash
 streamlit run dashboard.py
 # Opens at http://localhost:8501
