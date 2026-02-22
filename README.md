@@ -213,5 +213,4 @@ The Streamlit dashboard shows live cost savings, model usage distribution,
 and projected savings at scale. From `smart-router/`: launch with:
 ```bash
 streamlit run dashboard.py
-# Opens at http://localhost:8501
 ```
