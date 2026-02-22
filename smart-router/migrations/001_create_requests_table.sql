@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS requests (
     input_tokens    INTEGER,
     output_tokens   INTEGER,
     cost_usd        NUMERIC(10, 6),
+    cost_saved_usd  NUMERIC(10, 6) DEFAULT 0,
     latency_ms      INTEGER,
     escalated       BOOLEAN DEFAULT FALSE
 );

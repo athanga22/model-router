@@ -8,7 +8,8 @@ def log_request(
     output_tokens: int,
     cost_usd: float,
     latency_ms: int,
-    escalated: bool = False
+    escalated: bool = False,
+    cost_saved_usd: float = 0.0
 ):
     conn = get_connection()
     cur = conn.cursor()
@@ -16,12 +17,12 @@ def log_request(
         INSERT INTO requests (
             raw_prompt, difficulty_tag, model_used,
             input_tokens, output_tokens, cost_usd,
-            latency_ms, escalated
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            latency_ms, escalated, cost_saved_usd
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         raw_prompt, difficulty_tag, model_used,
         input_tokens, output_tokens, cost_usd,
-        latency_ms, escalated
+        latency_ms, escalated, cost_saved_usd
     ))
     conn.commit()
     cur.close()

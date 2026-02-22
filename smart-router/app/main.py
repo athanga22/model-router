@@ -57,7 +57,8 @@ async def chat(request: ChatRequest):
         output_tokens=result["output_tokens"],
         cost_usd=result["cost_usd"],
         latency_ms=latency_ms,
-        escalated=result["escalated"]
+        escalated=result["escalated"],
+        cost_saved_usd=result["cost_saved_usd"]
     )
 
     return ChatResponse(
@@ -109,11 +110,8 @@ async def stats():
 
         # Cost saved = what GPT-4o would have cost minus what was actually spent
         cur.execute("""
-            SELECT COALESCE(SUM(
-                (input_tokens + output_tokens) / 1000.0 * 0.005 - cost_usd
-            ), 0)
+            SELECT COALESCE(SUM(cost_saved_usd), 0)
             FROM requests
-            WHERE model_used != 'gpt-4o'
         """)
         total_saved = float(cur.fetchone()[0])
 
