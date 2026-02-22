@@ -29,8 +29,8 @@ LABELED_PROMPTS = [
     # COMPLEX (5 cases)
     ("Design a fault-tolerant microservices architecture for an e-commerce platform with 5M daily users.", "complex"),
     ("Debug this system: requests randomly fail under load, latency spikes to 10s, no obvious errors in logs.", "complex"),
-    ("Write a research comparison of transformer vs mamba architectures including trade-offs.", "complex"),
-    ("Build a full JWT authentication system with refresh token rotation in FastAPI.", "complex"),
+    ("Implement a role-based access control system with FastAPI and PostgreSQL.", "complex"),
+    ("Write a technical deep-dive comparing Redis and Memcached for caching strategies.", "complex"),
     ("Analyze the implications of the CAP theorem on distributed database design.", "complex"),
 ]
 
