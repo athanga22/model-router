@@ -1,6 +1,6 @@
 # Smart Model Router
 
-A production-grade API that automatically routes LLM prompts to the cheapest
+An API that automatically routes LLM prompts to the cheapest
 model capable of handling them. Saves up to 90%+ on inference costs without
 sacrificing response quality.
 
