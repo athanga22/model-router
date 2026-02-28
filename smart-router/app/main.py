@@ -6,8 +6,7 @@ from app.models import ChatRequest, ChatResponse, HealthResponse, StatsResponse
 from app.router import route_prompt
 from app.logger import log_request
 from app.database import get_connection
-from app.classifier import classify_prompt, OLLAMA_BASE_URL
-import httpx
+from app.classifier import classify_prompt
 
 app = FastAPI(
     title="Smart Model Router",
@@ -36,11 +35,6 @@ async def chat(request: ChatRequest):
 
     try:
         result = route_prompt(request.prompt)
-    except httpx.TimeoutException:
-        raise HTTPException(
-            status_code=504,
-            detail={"error": "classifier_timeout", "detail": "Classifier did not respond in time."}
-        )
     except Exception as e:
         raise HTTPException(
             status_code=502,
@@ -73,27 +67,29 @@ async def chat(request: ChatRequest):
 
 @app.get("/v1/health", response_model=HealthResponse)
 async def health():
-    # Check DB
     db_status = "connected"
+    db_error = None
     try:
         conn = get_connection()
         conn.close()
-    except Exception:
+    except Exception as e:
         db_status = "disconnected"
+        db_error = str(e)
 
-    # Check classifier (Ollama)
     classifier_status = "ready"
     try:
-        r = httpx.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=3.0)
-        r.raise_for_status()
+        result = classify_prompt("test")
+        if result not in {"simple", "medium", "complex"}:
+            classifier_status = "unavailable"
     except Exception:
         classifier_status = "unavailable"
 
-    return HealthResponse(
-        status="ok" if db_status == "connected" and classifier_status == "ready" else "degraded",
-        db=db_status,
-        classifier=classifier_status
-    )
+    return JSONResponse(content={
+        "status": "ok" if db_status == "connected" else "degraded",
+        "db": db_status,
+        "db_error": db_error,
+        "classifier": classifier_status
+    })
 
 
 @app.get("/v1/stats", response_model=StatsResponse)

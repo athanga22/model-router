@@ -1,14 +1,15 @@
 """Request classifier for routing decisions."""
-import httpx
 import os
 import time
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-CLASSIFIER_MODEL = "phi3:mini"
+CLASSIFIER_MODEL = "llama-3.1-8b-instant"
 VALID_TAGS = {"simple", "medium", "complex"}
+
+_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 SYSTEM_PROMPT = """You are a prompt difficulty classifier. Your only job is to read a user prompt and return exactly one word — nothing else.
 
@@ -42,53 +43,40 @@ Rules:
 
 def classify_prompt(prompt: str) -> str:
     """
-    Classify a prompt's difficulty using Phi-3 mini via Ollama.
+    Classify a prompt's difficulty using Llama 3.1 8B via Groq.
     Returns exactly one of: 'simple', 'medium', 'complex'
     """
 
-    # Edge case: empty or whitespace
     if not prompt or not prompt.strip():
         return "simple"
 
-    # Edge case: very long prompt — truncate for classifier only
     classifier_input = prompt.strip()
     if len(classifier_input) > 2000:
         classifier_input = classifier_input[:2000] + "... [truncated]"
 
     try:
-        response = httpx.post(
-            f"{OLLAMA_BASE_URL}/api/generate",
-            json={
-                "model": CLASSIFIER_MODEL,
-                "system": SYSTEM_PROMPT,
-                "prompt": f"Classify this prompt:\n\n{classifier_input}",
-                "stream": False,
-                "options": {
-                    "temperature": 0.0,
-                    "num_predict": 5       # We only need one word
-                }
-            },
-            timeout=10.0
+        response = _client.chat.completions.create(
+            model=CLASSIFIER_MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Classify this prompt:\n\n{classifier_input}"}
+            ],
+            temperature=0.0,
+            max_tokens=5,
         )
-        response.raise_for_status()
-        raw = response.json().get("response", "").strip().lower()
 
-        # Strip punctuation just in case
+        raw = response.choices[0].message.content.strip().lower()
         tag = raw.strip(".,!? \n")
 
         if tag in VALID_TAGS:
             return tag
 
-        # Partial match fallback
         for valid in VALID_TAGS:
             if valid in tag:
                 return valid
 
-        # If nothing matched, default to medium
         return "medium"
 
-    except httpx.TimeoutException:
-        return "medium"
     except Exception:
         return "medium"
 
