@@ -87,7 +87,7 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build --platform linux/amd64 -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+          docker build --platform linux/amd64 -f smart-router/Dockerfile -t $IMAGE:${{ github.sha }} -t $IMAGE:latest smart-router
           docker push $IMAGE:${{ github.sha }}
           docker push $IMAGE:latest
 
