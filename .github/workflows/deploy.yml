@@ -86,8 +86,9 @@ jobs:
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build and push image
+        working-directory: smart-router
         run: |
-          docker build --platform linux/amd64 -f smart-router/Dockerfile -t $IMAGE:${{ github.sha }} -t $IMAGE:latest smart-router
+          docker build --platform linux/amd64 -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
           docker push $IMAGE:${{ github.sha }}
           docker push $IMAGE:latest
 
