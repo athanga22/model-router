@@ -74,7 +74,7 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 | API Framework | FastAPI |
 | Classifier | Phi-3 mini via Ollama (local) |
 | Simple Model | Claude Haiku 4.5 (Anthropic) |
-| Medium Model | Llama 3.3 70B (Groq) |
+| Medium Model | Llama 3.3 70B (Cerebras) |
 | Complex Model | GPT-4o (OpenAI) |
 | Database | PostgreSQL via Docker |
 | Dashboard | Streamlit + Plotly |

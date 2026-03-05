@@ -1,16 +1,16 @@
 from typing import Tuple
 
 RATES = {
-    "claude-haiku-4-5":        (0.001,    0.005),    # $1/$5 per MTok
-    "llama-3.3-70b-versatile": (0.000059, 0.000079), # $0.059/$0.079 per MTok — Groq
-    "gpt-4o":                  (0.005,    0.015),
+    "claude-haiku-4-5":  (0.001,    0.005),
+    "llama-3.3-70b":     (0.00007,  0.00007),  # Cerebras ~$0.07/MTok blended
+    "gpt-4o":            (0.005,    0.015),
 }
 
 GPT4O_RATES = (0.005, 0.015)
 
 MODEL_FOR_TAG = {
     "simple":  "claude-haiku-4-5",
-    "medium":  "llama-3.3-70b-versatile",
+    "medium":  "llama-3.3-70b",
     "complex": "gpt-4o",
 }
 

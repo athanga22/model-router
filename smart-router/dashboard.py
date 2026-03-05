@@ -1,363 +1,425 @@
-import streamlit as st
+"""Smart Router Dashboard — metrics + live streaming chat."""
+import os
+import json
+import time
 import psycopg2
+import httpx
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-import os
+import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
 
-st.set_page_config(
-    page_title="Smart Model Router",
-    page_icon="⚡",
-    layout="wide"
+# ─────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+
+st.set_page_config(         
+    page_title="Smart Router",
+    page_icon="SR",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+if not DATABASE_URL:
+    st.error("DATABASE_URL environment variable is not set.")
+    st.stop()
+
+# ─────────────────────────────────────────────
+# CSS
+# ─────────────────────────────────────────────
 
 st.markdown("""
 <style>
-    .metric-card {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin: 4px;
-    }
-    .metric-label {
-        color: #94a3b8;
-        font-size: 13px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 8px;
-    }
-    .metric-value {
-        color: #f1f5f9;
-        font-size: 32px;
-        font-weight: 700;
-        line-height: 1;
-    }
-    .metric-delta-good { color: #22c55e; font-size: 13px; margin-top: 6px; }
-    .metric-delta-bad  { color: #f59e0b; font-size: 13px; margin-top: 6px; }
-    .section-title {
-        color: #f1f5f9;
-        font-size: 18px;
-        font-weight: 600;
-        margin: 24px 0 12px 0;
-    }
-    .projection-card {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border: 1px solid #22c55e44;
-        border-left: 4px solid #22c55e;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin: 4px;
-    }
-    .projection-label { color: #22c55e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
-    .projection-value { color: #f1f5f9; font-size: 28px; font-weight: 700; margin-top: 4px; }
-    .projection-sub   { color: #64748b; font-size: 12px; margin-top: 4px; }
+  .stApp { background: #0f172a; color: #e2e8f0; }
+
+  .metric-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .metric-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
+  .metric-value { font-size: 32px; font-weight: 700; color: #f1f5f9; margin: 4px 0; }
+  .metric-sub   { font-size: 13px; color: #64748b; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .badge-simple    { background:#052e16; color:#22c55e; border:1px solid #22c55e44; }
+  .badge-medium    { background:#172554; color:#3b82f6; border:1px solid #3b82f644; }
+  .badge-complex   { background:#2e1065; color:#a855f7; border:1px solid #a855f744; }
+  .badge-escalated { background:#431407; color:#fb923c; border:1px solid #fb923c44; }
+
+  .chat-user {
+    background: #1e40af;
+    color: #e0f2fe;
+    padding: 10px 16px;
+    border-radius: 18px 18px 4px 18px;
+    margin: 8px 0 4px auto;
+    max-width: 70%;
+    width: fit-content;
+    float: right;
+    clear: both;
+    font-size: 14px;
+  }
+  .chat-assistant {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 18px 18px 18px 4px;
+    margin: 4px auto 4px 0;
+    max-width: 80%;
+    width: fit-content;
+    float: left;
+    clear: both;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+  .chat-meta {
+    float: left; clear: both;
+    margin: 2px 0 12px 4px;
+    font-size: 11px; color: #64748b;
+  }
+  .routing-header {
+    background: #0f1f11;
+    border: 1px solid #166534;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #86efac;
+    margin: 6px 0;
+    float: left; clear: both;
+    width: fit-content;
+  }
+  .clearfix { clear: both; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── DB ────────────────────────────────────────────────────────────────────────
 
-@st.cache_resource
-def get_conn():
-    return psycopg2.connect(os.getenv("DATABASE_URL"))
-
-@st.cache_data(ttl=30)
-def load_data():
-    return pd.read_sql("""
-        SELECT id, created_at, model_used, difficulty_tag,
-               cost_usd, cost_saved_usd, latency_ms, escalated,
-               input_tokens, output_tokens
-        FROM requests ORDER BY created_at ASC
-    """, get_conn())
+# ─────────────────────────────────────────────
+# DB helpers
+# ─────────────────────────────────────────────
 
 @st.cache_data(ttl=30)
 def load_stats():
-    cur = get_conn().cursor()
-
-    cur.execute("SELECT COUNT(*) FROM requests")
-    total_requests = cur.fetchone()[0]
-
-    cur.execute("SELECT COALESCE(SUM(cost_usd), 0) FROM requests")
-    total_cost = float(cur.fetchone()[0])
-
-    cur.execute("SELECT COALESCE(SUM(cost_saved_usd), 0) FROM requests")
-    total_saved = float(cur.fetchone()[0])
-
+    conn = psycopg2.connect(DATABASE_URL)
+    cur  = conn.cursor()
     cur.execute("""
-        SELECT COALESCE(SUM(
-            (input_tokens / 1000.0 * 0.005) + (output_tokens / 1000.0 * 0.015)
-        ), 0)
+        SELECT COUNT(*),
+               COALESCE(SUM(cost_usd),0),
+               COALESCE(SUM(cost_saved_usd),0),
+               COALESCE(AVG(escalated::int)*100,0)
         FROM requests
     """)
-    total_if_gpt4o = float(cur.fetchone()[0])
-
+    row = cur.fetchone()
+    cur.execute("SELECT model_used, COUNT(*) FROM requests GROUP BY model_used")
+    model_rows = cur.fetchall()
     cur.execute("""
-        SELECT ROUND(100.0 * SUM(CASE WHEN escalated THEN 1 ELSE 0 END) /
-               NULLIF(COUNT(*), 0), 1) FROM requests
+        SELECT DATE_TRUNC('hour', created_at) AS hr,
+               SUM(cost_saved_usd) AS saved
+        FROM requests GROUP BY hr ORDER BY hr
     """)
-    escalation_rate = float(cur.fetchone()[0] or 0)
-
-    cur.execute("""
-        SELECT model_used, COUNT(*) as cnt
-        FROM requests GROUP BY model_used
-    """)
-    model_counts = dict(cur.fetchall())
-    cur.close()
-
+    savings_rows = cur.fetchall()
+    cur.close(); conn.close()
     return {
-        "total_requests":  total_requests,
-        "total_cost":      total_cost,
-        "total_saved":     total_saved,
-        "total_if_gpt4o":  total_if_gpt4o,
-        "escalation_rate": escalation_rate,
-        "model_counts":    model_counts,
+        "total":      int(row[0]),
+        "cost":       float(row[1]),
+        "saved":      float(row[2]),
+        "esc_pct":    float(row[3]),
+        "model_dist": {r[0]: r[1] for r in model_rows},
+        "savings_ts": savings_rows,
     }
 
-# ── Load ──────────────────────────────────────────────────────────────────────
 
-try:
-    stats = load_stats()
-    df    = load_data()
-except Exception as e:
-    st.error(f"DB connection failed: {e}")
-    st.stop()
+@st.cache_data(ttl=30)
+def load_recent():
+    conn = psycopg2.connect(DATABASE_URL)
+    df = pd.read_sql("""
+        SELECT created_at, difficulty_tag, model_used,
+               cost_usd, cost_saved_usd, latency_ms, escalated
+        FROM requests ORDER BY created_at DESC LIMIT 20
+    """, conn)
+    conn.close()
+    return df
 
-if df.empty:
-    st.warning("No requests yet. Fire some prompts at the API.")
-    st.stop()
 
-# ── Projections ───────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# Streaming helper
+# ─────────────────────────────────────────────
 
-savings_per_request   = stats["total_saved"] / max(stats["total_requests"], 1)
-gpt4o_cost_per_req    = stats["total_if_gpt4o"] / max(stats["total_requests"], 1)
-savings_pct           = (savings_per_request / gpt4o_cost_per_req * 100) if gpt4o_cost_per_req > 0 else 0
-proj_10k              = savings_per_request * 10_000
-proj_100k             = savings_per_request * 100_000
-proj_1m               = savings_per_request * 1_000_000
+def stream_chat(prompt: str):
+    """
+    Yields dicts from the /v1/chat/stream endpoint:
+      {"type": "metadata", "difficulty_tag": "...", "model_used": "..."}
+      {"type": "token",    "text": "..."}
+      {"type": "done",     "cost_usd": ..., "cost_saved_usd": ..., ...}
+      {"type": "error",    "message": "..."}
+    """
+    url = f"{API_BASE_URL}/v1/chat/stream"
+    with httpx.stream("POST", url, json={"prompt": prompt}, timeout=120) as resp:
+        resp.raise_for_status()
+        for line in resp.iter_lines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError:
+                continue
 
-# ── Header ────────────────────────────────────────────────────────────────────
 
-st.markdown("## ⚡ Smart Model Router")
-st.caption("Routes every prompt to the cheapest capable model · Live dashboard · Refreshes every 30s")
-st.divider()
+# ─────────────────────────────────────────────
+# Tabs
+# ─────────────────────────────────────────────
 
-# ── Section 1: Key Metrics ────────────────────────────────────────────────────
+tab_dash, tab_chat = st.tabs(["Dashboard", "Try It Live"])
 
-st.markdown('<div class="section-title">Performance Overview</div>', unsafe_allow_html=True)
 
-c1, c2, c3, c4, c5 = st.columns(5)
+# ══════════════════════════════════════════════
+# TAB 1  Dashboard
+# ══════════════════════════════════════════════
 
-with c1:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Total Requests</div>
-        <div class="metric-value">{stats['total_requests']:,}</div>
-        <div class="metric-delta-good">↑ All routed automatically</div>
-    </div>""", unsafe_allow_html=True)
+with tab_dash:
+    st.markdown("## Smart Router — Metrics")
 
-with c2:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Actual Spend</div>
-        <div class="metric-value">${stats['total_cost']:.4f}</div>
-        <div class="metric-delta-good">With smart routing</div>
-    </div>""", unsafe_allow_html=True)
+    db_ok = True
+    stats = None
+    df    = None
 
-with c3:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Without Router</div>
-        <div class="metric-value">${stats['total_if_gpt4o']:.4f}</div>
-        <div class="metric-delta-bad">Always GPT-4o baseline</div>
-    </div>""", unsafe_allow_html=True)
+    try:
+        stats = load_stats()
+        df    = load_recent()
+    except Exception as e:
+        st.error(f"Database connection failed: {e}")
+        st.info("Run `python3 -m app.database` to initialise the schema, then send prompts via the **Try It Live** tab.")
+        db_ok = False
 
-with c4:
-    haiku_pct = round(stats['model_counts'].get('claude-haiku-4-5', 0) / max(stats['total_requests'], 1) * 100)
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Cheap Model Rate</div>
-        <div class="metric-value">{haiku_pct}%</div>
-        <div class="metric-delta-good">Routed to Haiku</div>
-    </div>""", unsafe_allow_html=True)
+    if db_ok and stats and stats["total"] == 0:
+        st.warning("No requests yet — try the **Try It Live** tab first.")
+        db_ok = False
 
-with c5:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Escalation Rate</div>
-        <div class="metric-value">{stats['escalation_rate']}%</div>
-        <div class="metric-delta-good">Self-healed automatically</div>
-    </div>""", unsafe_allow_html=True)
+    if db_ok and stats:
+        gpt4o_equiv = stats["cost"] + stats["saved"]
+        savings_pct = (stats["saved"] / gpt4o_equiv * 100) if gpt4o_equiv > 0 else 0
 
-# ── Section 2: Projected Savings ─────────────────────────────────────────────
+        c1, c2, c3, c4 = st.columns(4)
+        for col, label, value, sub in [
+            (c1, "Total Requests",  f"{stats['total']:,}",       "all time"),
+            (c2, "Actual Spend",    f"${stats['cost']:.4f}",     "real cost"),
+            (c3, "Cost Saved",      f"${stats['saved']:.4f}",    f"{savings_pct:.0f}% vs GPT-4o baseline"),
+            (c4, "Escalation Rate", f"{stats['esc_pct']:.1f}%",  "of requests"),
+        ]:
+            with col:
+                st.markdown(f"""
+                <div class="metric-card">
+                  <div class="metric-label">{label}</div>
+                  <div class="metric-value">{value}</div>
+                  <div class="metric-sub">{sub}</div>
+                </div>""", unsafe_allow_html=True)
 
-st.markdown('<div class="section-title">Projected Savings at Scale</div>', unsafe_allow_html=True)
-st.caption(f"Based on {savings_pct:.1f}% average cost reduction per request vs always using GPT-4o")
+        st.markdown("---")
 
-p1, p2, p3 = st.columns(3)
+        ch1, ch2 = st.columns(2)
+        with ch1:
+            if stats["model_dist"]:
+                fig = px.pie(
+                    values=list(stats["model_dist"].values()),
+                    names=list(stats["model_dist"].keys()),
+                    title="Model Distribution",
+                    color_discrete_sequence=["#22c55e", "#3b82f6", "#a855f7"],
+                )
+                fig.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
+                                  font_color="#e2e8f0", title_font_color="#f1f5f9")
+                st.plotly_chart(fig, use_container_width=True)
 
-with p1:
-    st.markdown(f"""
-    <div class="projection-card">
-        <div class="projection-label">At 10,000 requests/month</div>
-        <div class="projection-value">${proj_10k:.2f} saved</div>
-        <div class="projection-sub">vs. ${gpt4o_cost_per_req * 10000:.2f} always-GPT-4o spend</div>
-    </div>""", unsafe_allow_html=True)
+        with ch2:
+            if stats["savings_ts"]:
+                ts = pd.DataFrame(stats["savings_ts"], columns=["hour", "saved"])
+                ts["cumulative_saved"] = ts["saved"].cumsum()
+                fig2 = px.area(ts, x="hour", y="cumulative_saved",
+                               title="Cumulative Savings",
+                               labels={"cumulative_saved": "$ Saved", "hour": ""},
+                               color_discrete_sequence=["#22c55e"])
+                fig2.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
+                                   font_color="#e2e8f0", title_font_color="#f1f5f9")
+                st.plotly_chart(fig2, use_container_width=True)
 
-with p2:
-    st.markdown(f"""
-    <div class="projection-card">
-        <div class="projection-label">At 100,000 requests/month</div>
-        <div class="projection-value">${proj_100k:.2f} saved</div>
-        <div class="projection-sub">vs. ${gpt4o_cost_per_req * 100000:.2f} always-GPT-4o spend</div>
-    </div>""", unsafe_allow_html=True)
+        if stats["total"] > 0:
+            st.markdown("### Savings Projections")
+            avg_saved = stats["saved"] / stats["total"]
+            p1, p2, p3 = st.columns(3)
+            for col, volume in zip([p1, p2, p3], [10_000, 100_000, 1_000_000]):
+                proj = avg_saved * volume
+                with col:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                      <div class="metric-label">{volume:,} req/month</div>
+                      <div class="metric-value">${proj:,.0f}</div>
+                      <div class="metric-sub">projected monthly savings</div>
+                    </div>""", unsafe_allow_html=True)
 
-with p3:
-    st.markdown(f"""
-    <div class="projection-card">
-        <div class="projection-label">At 1,000,000 requests/month</div>
-        <div class="projection-value">${proj_1m:,.0f} saved</div>
-        <div class="projection-sub">vs. ${gpt4o_cost_per_req * 1_000_000:,.0f} always-GPT-4o spend</div>
-    </div>""", unsafe_allow_html=True)
+        if df is not None and not df.empty:
+            st.markdown("---")
+            st.markdown("### Recent Requests")
+            st.dataframe(
+                df.rename(columns={
+                    "created_at":     "Time",
+                    "difficulty_tag": "Tier",
+                    "model_used":     "Model",
+                    "cost_usd":       "Cost ($)",
+                    "cost_saved_usd": "Saved ($)",
+                    "latency_ms":     "Latency (ms)",
+                    "escalated":      "Escalated",
+                }),
+                use_container_width=True,
+                hide_index=True,
+            )
 
-st.divider()
+    st.caption("Auto-refreshes every 30 s.")
 
-# ── Section 3: Charts ─────────────────────────────────────────────────────────
 
-col_l, col_r = st.columns(2)
+# ══════════════════════════════════════════════
+# TAB 2  Live Streaming Chat
+# ══════════════════════════════════════════════
 
-with col_l:
-    st.markdown('<div class="section-title">Model Usage Distribution</div>', unsafe_allow_html=True)
-    model_counts_df = pd.DataFrame(
-        list(stats["model_counts"].items()),
-        columns=["Model", "Requests"]
+with tab_chat:
+    st.markdown("## Try It Live")
+    st.caption(
+        "The routing decision appears **immediately** after classification. "
+        "Tokens stream in as the model generates them."
     )
-    color_map = {
-        "claude-haiku-4-5":  "#22c55e",
-        "claude-sonnet-4-6": "#3b82f6",
-        "gpt-4o":            "#f59e0b",
-    }
-    fig_pie = px.pie(
-        model_counts_df,
-        names="Model", values="Requests",
-        color="Model", color_discrete_map=color_map,
-        hole=0.5,
-    )
-    fig_pie.update_traces(textposition="outside", textinfo="percent+label")
-    fig_pie.update_layout(
-        showlegend=False,
-        margin=dict(t=10, b=10, l=10, r=10),
-        height=300,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#94a3b8")
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
 
-with col_r:
-    st.markdown('<div class="section-title">Cost by Model vs GPT-4o Equivalent</div>', unsafe_allow_html=True)
+    # Manage input clearing via session state (must happen before widget instantiation)
+    if "chat_input" not in st.session_state:
+        st.session_state["chat_input"] = ""
+    if st.session_state.get("clear_chat_input", False):
+        st.session_state["chat_input"] = ""
+        st.session_state["clear_chat_input"] = False
 
-    model_agg = df.groupby("model_used").agg(
-        actual=("cost_usd", "sum"),
-        tokens=("input_tokens", "sum"),
-        out_tokens=("output_tokens", "sum")
-    ).reset_index()
-    model_agg["gpt4o_equiv"] = (model_agg["tokens"] + model_agg["out_tokens"]) / 1000 * 0.005
+    # Top container for current Q&A (always above the input)
+    chat_area = st.container()
 
-    fig_compare = go.Figure()
-    for _, row in model_agg.iterrows():
-        color = color_map.get(row["model_used"], "#94a3b8")
-        fig_compare.add_trace(go.Bar(
-            name=row["model_used"],
-            x=[row["model_used"]],
-            y=[row["actual"]],
-            marker_color=color,
-            text=f'${row["actual"]:.5f}',
-            textposition="outside"
-        ))
-        fig_compare.add_trace(go.Bar(
-            name=f'{row["model_used"]} (GPT-4o equiv)',
-            x=[row["model_used"]],
-            y=[row["gpt4o_equiv"]],
-            marker_color=color,
-            opacity=0.3,
-            text=f'${row["gpt4o_equiv"]:.5f}',
-            textposition="outside",
-            showlegend=False
-        ))
+    st.markdown("---")
 
-    fig_compare.update_layout(
-        barmode="group",
-        showlegend=False,
-        margin=dict(t=10, b=10, l=10, r=10),
-        height=300,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#94a3b8"),
-        yaxis=dict(gridcolor="#1e293b", title="Cost (USD)"),
-        xaxis=dict(gridcolor="#1e293b")
-    )
-    st.plotly_chart(fig_compare, use_container_width=True)
+    # Centered input in the middle of the page
+    left, center, right = st.columns([1, 2, 1])
+    with center:
+        user_input = st.text_area(
+            "Your prompt",
+            placeholder="Ask anything — simple, medium, or complex…",
+            height=80,
+            label_visibility="collapsed",
+            key="chat_input",
+        )
+        send = st.button("Send ▶", use_container_width=True, type="primary")
 
-st.divider()
+    # ── Handle send ───────────────────────────────────────────────────
+    if send and user_input.strip():
+        prompt = user_input.strip()
 
-# ── Section 4: Cost Savings Over Time ────────────────────────────────────────
+        # Mark for clearing the text input on the next run
+        st.session_state["clear_chat_input"] = True
 
-st.markdown('<div class="section-title">Cumulative Cost Savings Over Time</div>', unsafe_allow_html=True)
+        # Render Q&A above the input
+        with chat_area:
+            st.markdown(
+                f'<div class="chat-user">{prompt}</div>'
+                '<div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
 
-df["created_at"] = pd.to_datetime(df["created_at"])
-df["hour"] = df["created_at"].dt.floor("H")
-time_data = df.groupby("hour").agg(
-    actual=("cost_usd", "sum"),
-    saved=("cost_saved_usd", "sum")
-).reset_index()
-time_data["cum_actual"] = time_data["actual"].cumsum()
-time_data["cum_saved"]  = time_data["saved"].cumsum()
-time_data["cum_gpt4o"]  = (time_data["actual"] + time_data["saved"]).cumsum()
+            routing_ph  = st.empty()
+            response_ph = st.empty()
+            meta_ph     = st.empty()
 
-fig_line = go.Figure()
-fig_line.add_trace(go.Scatter(
-    x=time_data["hour"], y=time_data["cum_gpt4o"],
-    name="If Always GPT-4o", line=dict(color="#f59e0b", width=2, dash="dash"),
-    fill=None
-))
-fig_line.add_trace(go.Scatter(
-    x=time_data["hour"], y=time_data["cum_actual"],
-    name="Actual Cost", line=dict(color="#3b82f6", width=2),
-    fill="tonexty", fillcolor="rgba(34,197,94,0.1)"
-))
-fig_line.update_layout(
-    margin=dict(t=10, b=10, l=10, r=10),
-    height=260,
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(color="#94a3b8"),
-    yaxis=dict(gridcolor="#1e293b", title="Cumulative Cost (USD)"),
-    xaxis=dict(gridcolor="#1e293b"),
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-)
-st.plotly_chart(fig_line, use_container_width=True)
+        routing_ph.markdown(
+            '<div class="routing-header">Classifying…</div>'
+            '<div class="clearfix"></div>',
+            unsafe_allow_html=True,
+        )
 
-st.divider()
+        accumulated = ""
+        metadata    = {}
+        done_data   = {}
+        error_msg   = None
 
-# ── Section 5: Recent Requests ────────────────────────────────────────────────
+        try:
+            for frame in stream_chat(prompt):
+                ftype = frame.get("type")
 
-st.markdown('<div class="section-title">Recent Requests</div>', unsafe_allow_html=True)
+                if ftype == "metadata":
+                    metadata  = frame
+                    tag       = frame.get("difficulty_tag", "?")
+                    model     = frame.get("model_used", "?")
+                    badge_cls = f"badge-{tag}" if tag in ("simple","medium","complex") else "badge-medium"
+                    routing_ph.markdown(
+                        f'<div class="routing-header">'
+                        f'<span class="badge {badge_cls}">{tag}</span>'
+                        f'  →  <strong>{model}</strong> &nbsp; generating…'
+                        f'</div><div class="clearfix"></div>',
+                        unsafe_allow_html=True,
+                    )
 
-display_df = df.sort_values("created_at", ascending=False).head(20)[[
-    "created_at", "model_used", "difficulty_tag",
-    "cost_usd", "cost_saved_usd", "latency_ms", "escalated"
-]].copy()
-display_df.columns = ["Timestamp", "Model", "Difficulty", "Cost ($)", "Saved ($)", "Latency (ms)", "Escalated"]
-display_df["Cost ($)"]  = display_df["Cost ($)"].apply(lambda x: f"${x:.6f}")
-display_df["Saved ($)"] = display_df["Saved ($)"].apply(lambda x: f"${x:.6f}")
-display_df["Escalated"] = display_df["Escalated"].apply(lambda x: "✅" if x else "—")
-st.dataframe(display_df, use_container_width=True, hide_index=True)
+                elif ftype == "token":
+                    accumulated += frame.get("text", "")
+                    response_ph.markdown(
+                        f'<div class="chat-assistant">{accumulated}▌</div>'
+                        '<div class="clearfix"></div>',
+                        unsafe_allow_html=True,
+                    )
 
-st.divider()
-st.caption("PostgreSQL · Streamlit · Anthropic + OpenAI APIs · Auto-refreshes every 30s")
+                elif ftype == "done":
+                    done_data   = frame
+                    escalated   = frame.get("escalated", False)
+                    final_tag   = frame.get("difficulty_tag", metadata.get("difficulty_tag", ""))
+                    final_model = frame.get("model_used",     metadata.get("model_used", ""))
+                    cost        = frame.get("cost_usd", 0)
+                    saved       = frame.get("cost_saved_usd", 0)
+                    latency     = frame.get("latency_ms", 0)
+
+                    badge_cls = f"badge-{final_tag}" if final_tag in ("simple","medium","complex") else "badge-medium"
+                    esc_badge = ' <span class="badge badge-escalated">↑ escalated</span>' if escalated else ""
+
+                    routing_ph.markdown(
+                        f'<div class="routing-header">'
+                        f'<span class="badge {badge_cls}">{final_tag}</span>{esc_badge}'
+                        f'  →  <strong>{final_model}</strong>'
+                        f'</div><div class="clearfix"></div>',
+                        unsafe_allow_html=True,
+                    )
+                    # Remove streaming cursor
+                    response_ph.markdown(
+                        f'<div class="chat-assistant">{accumulated}</div>'
+                        '<div class="clearfix"></div>',
+                        unsafe_allow_html=True,
+                    )
+                    meta_ph.markdown(
+                        f'<div class="chat-meta">'
+                        f'${cost:.6f} &nbsp;·&nbsp; '
+                        f'${saved:.6f} saved &nbsp;·&nbsp; '
+                        f'{latency} ms'
+                        f'</div><div class="clearfix"></div>',
+                        unsafe_allow_html=True,
+                    )
+
+                elif ftype == "error":
+                    error_msg = frame.get("message", "Unknown error")
+                    break
+
+        except Exception as e:
+            error_msg = str(e)
+
+        if error_msg:
+            routing_ph.error(f"{error_msg}")
