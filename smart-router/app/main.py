@@ -19,9 +19,10 @@ load_dotenv()
 
 app = FastAPI(title="Smart Router", version="1.0.0")
 
+_dashboard_url = (os.getenv("DASHBOARD_URL") or "https://model-router-threeways.streamlit.app").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("DASHBOARD_URL", "")],
+    allow_origins=[_dashboard_url],
     allow_methods=["POST", "GET"],
     allow_headers=["Content-Type"],
 )
