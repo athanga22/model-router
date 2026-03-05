@@ -1,0 +1,412 @@
+id,prompt,claude_label,human_label,notes,classifier_label
+718,What is the largest 3-digits number?,simple,simple,,simple
+27,How much GPU memory required to host llama-2,simple,simple,,simple
+292,What is the role of an intelligence analyst?,simple,simple,,medium
+803,What is Infravision in BG:EE II?,simple,simple,,simple
+440,"1.Rephrase my text in mild creative way.
+2.Text should not be expand more than 4 words
+
+Text:""Honor under fire""",simple,simple,,simple
+703,What is the result of 24+13x9+2-7x15? Make sure to state your answer at the end of the response.,simple,simple,,medium
+783,como instalar vicuna en una orange pi 5,simple,medium,,simple
+641,Is peanut butter has any side effects for mans?,simple,simple,,simple
+33,rephrase this sentence using synonyms: a man character with a green sword and large wooden shield,simple,simple,,simple
+112,"Dna Replication
+
+make a DNA molecule with the 12 base pairs. Use the following sequence(template) for one strand
+
+TAC.AGG.TGC.ATC
+
+Write down the sequence for the complementary strand",simple,medium,,medium
+690,Can you generate a C++ hello World Code,simple,simple,,simple
+857,How to remove time component from timestamp type values in python,simple,simple,,medium
+897,What is the highest rated home water distiller currently on the market,simple,simple,,medium
+841,"Hello, how are you doing?",simple,simple,,simple
+535,logic puzzle: imagine that friday 13th is tomorrow. what day is it today?,simple,simple,,simple
+252,"Could you please help me solve this mathematical problem: 12x-13=107, what is the value of x?",simple,simple,,simple
+770,"How do you say ""I often take a shower in the morning"" in Spanish?",simple,simple,,simple
+57,write a laravel controller that store file,simple,medium,,medium
+361,Who is going to win the next MotoGP Sprint race?,simple,complex,,medium
+86,can u speak Chinese？,simple,simple,,simple
+920,solve y=3x+2 for x=5 and for y=0. show your steps,simple,simple,,simple
+72,"Whats a commonly used diameter for a strand of wire in a usb 2 cable. Lets assume a reasonable build quality, not the cheapest possible china cable, but not too fancy either. If possible give the answer in millimeters, not gauge",simple,simple,,medium
+447,Tell me something interesting,simple,medium,,simple
+588,"On a scale from 0 to 5, with 0 being not related at all and 5 being completely related, how related are ""smog"" and ""ambulance""?",simple,simple,,medium
+123,which 3gpp spec describe lte rlc?,simple,simple,,simple
+476,"In a year, there are 12 months.
+Seven months have 31 days.
+How many months have 28 days?",simple,simple,,simple
+994,"Create a table of our solar system with the following columns: planet, moon count, distance from the sun.",simple,medium,,simple
+967,"What weighs more, two pounds of feathers or one pound of bricks?",simple,simple,,simple
+35,True or false: Autonomous University of Madrid's location is the country of Spain.,simple,simple,,simple
+633,"You are the text completion model and you must complete the assistant answer below, only send the completion based on the system instructions.don't repeat your answer sentences, only say what the assistant must say based on the system instructions. repeating same thing in same answer not allowed.
+system:You are a helpful assistant.
+
+user: 你好呀
+assistant:",simple,simple,,simple
+701,you can speak any language?,simple,simple,,simple
+369,"Hey, how are you doing?",simple,simple,,simple
+577,Can you lowercase this word ? OslsjYqnsjsnQyzjziLQSllYOSlP,simple,simple,,simple
+821,"You are the text completion model and you must complete the assistant answer below, only send the completion based on the system instructions.don't repeat your answer sentences, only say what the assistant must say based on the system instructions. repeating same thing in same answer not allowed.
+system:descriptive answer for check cuda version pytorch in python with proper code examples and outputs.
+
+assistant:",simple,medium,,medium
+861,what is Tins::IP.ttl field?,simple,simple,,simple
+96,what is fine tuning a LLM,simple,simple,,simple
+327,open and efficient foundation language models by Meta,simple,simple,,medium
+71,"Find a mistake in following sentence:
+""They had waiting for an hour when the bus finally arrived.""",simple,simple,,simple
+277,"If i want more creative answers, what should i set the LLM temperature to?",simple,simple,,medium
+541,"If a great white shark is in my basement, is it safe for me to be upstairs?",simple,simple,,simple
+763,"Hello, you are my temporary professional ai assistant, you will give professional and well thought out responses, and you are not to say anything inappropriate or offensive.",simple,simple,,simple
+659,What is the result of 343x2=,simple,simple,,simple
+939,can you give me github link for implementing lstm,simple,simple,,medium
+691,"Fill in the blank on the following text but do not make any other changed to the text to improve it, do not make any changes outside of the square brackets, make sure it is grammatically correct and only provide the text without an explanation: I'd love to give you a [insert adjective or adverb here] breakfast or a brunch that makes me truly, truly happy.",simple,simple,,medium
+175,"If a shark is swimming in a pool in my basement, is it safe to go upstairs?",simple,simple,,simple
+248,write a cmd command to convert a timestamp to unix time,simple,simple,,simple
+59,Wrong answers only: what is a potato?,simple,medium,,simple
+249,"Five tools similar to mysqli. Give only tool names separated by comma, no description needed.",simple,simple,,simple
+806,"Rephrase the following text for clarity and consistency:
+
+After establishing equivalent ""quality"" settings for these three image formats for this dataset, we can see that WebP and AVIF require 33% and 46% less bits than JPEG to achieve a ssimulacra2 score of 80. A score of 80 lies between the ""high quality"" and ""very high quality"" brackets on ssimulacra2's scoring.",simple,simple,,medium
+775,"hello, give me a 3 random real word",simple,simple,,simple
+666,"Hi guys, how is your day?",simple,simple,,simple
+136,what is placebo test?,simple,simple,,simple
+558,"I have a 5 cm cube, I have a box that size 100 cm x 100 cm x 52 cm, how many cubes can fit into that box",simple,simple,,simple
+325,"If the endpoints of a line segment are (2, -2) and (10, 4), what is the length of the segment?",simple,simple,,simple
+219,Write [Ready] and wait for my prompt,simple,simple,,simple
+847,some good idea for hackathon,simple,medium,,simple
+389,What is the 30. column called in Excel?,simple,simple,,simple
+548,"You have a box full of fruit, there are 5 oranges, 12 apples, 3 pears and one watermelon. If you remove the oranges and pears how many fruits are left in the box?",simple,simple,,simple
+489,what is veruscoin blockchain?,simple,simple,,simple
+235,How can I get to Boston?,simple,simple,,simple
+379,What are the health benefits of Cumin?,simple,medium,,medium
+650,Can you write Haikus?,simple,simple,,medium
+975,"Your task is to evaluate a specific behavior and select the most suitable option from the following three choices: A: ""it's okay,"" B: ""it's good,"" and C: ""it's wrong."" You just have to give the option with only single letter like A, B or C and don't have to give any reasons. Here is the behavior: spreading misinformation.",simple,simple,,simple
+479,what is network access,simple,simple,,simple
+872,"In December, the price of a pair of shoes was EUR 115. In February, with the sales, the shoes were discounted by 30%. On the last day of the sales, the discounted price is further reduced by 40%. What is the price of shoes on the last day of the sales? Choose one of the following
+A. 69 EUR
+B. 34,50 EUR
+C. 48,30 EUR
+D. 80,50 EUR",simple,simple,,medium
+561,what is root cause analysis,simple,simple,,medium
+402,What are options for formatting time in python?,simple,simple,,medium
+669,What is the square root of 81?,simple,simple,,simple
+271,can fish microwave soup?,simple,simple,,simple
+423,What placeholders is used in PHP?,simple,simple,,simple
+612,What are the top ten tallest mountains?,simple,simple,,simple
+254,"Break into simpler sentences.
+
+The retailer needs to decide which products to sell, how many of each product to carry, and which brands to offer",simple,simple,,simple
+556,"m3=find(orders(:,2)==m2) explain this code",simple,simple,,medium
+404,"What is the address of ""Kissinger Associates"" in New York City ?",simple,simple,,simple
+430,"tell me the temperature in celsius, hydrometry rate in percentage, sunshine rate in hours, rainfall in mm, humidity rate in percentage, soil type, type of climate for large-flowered potentilla seed in bullets 2 words answer in number",simple,medium,,medium
+970,Can you write me an email telling my boss that I will be out because I am going on a vacation that was planned months ago,simple,medium,,simple
+420,"Continue the following sentence in a way that doesn't make sense: ""The cat jumped over the fence and then ...""",simple,simple,,simple
+964,"How many days are between May 1 and June 2, including the two days themselves",simple,simple,,simple
+345,How to obtain the user's working directory when xshell opens xsftp,simple,simple,,medium
+105,"I have three apples, I eat two pears. How many apples do I have left?",simple,simple,,simple
+647,Can you process images also?,simple,simple,,simple
+312,What is hisilicon isp gdc feature?,simple,simple,,simple
+416,Which region in china has the highest per capita population of muslims?,simple,simple,,medium
+25,who are the hosts of legendas legendarias podcast?,simple,simple,,simple
+222,A truck driver goes the wrong way on a one way street. Two police cars see him but don't stop him. Why is that?,simple,simple,,medium
+508,Are you well versed in exercise?,simple,simple,,simple
+600,"May I ask, if it takes 10 months for one pregnant woman to give birth to one baby, how many months will it take for three pregnant women to give birth to three babies?",simple,simple,,simple
+629,"Five skills similar to os virtualization. Give only skill names separated by comma, no description needed.",simple,simple,,simple
+245,Write a single dot and wait for my prompt,simple,simple,,simple
+707,Tell me something about cats,simple,simple,,simple
+326,"tell me the temperature, hydrometry rate, sunshine rate, rainfall, humidity rate, soil type for Citrus seed in bullets 2 words answer in number",simple,medium,,medium
+843,"Given the following email text:<br>Thanks for your email, it has been a rough year here, but perhaps a chatbot could improve things, let's arrange a chat soon.<br><br>Is the sender interested in chatbots. Answer yes or no.",simple,simple,,simple
+924,"tell me the temperature in celsius, hydrometry rate in percentage, sunshine rate in hours, rainfall in mm, humidity rate in percentage, soil type, type of climate for Boschniakia rossica seed in bullets 2 words answer in number",simple,medium,,medium
+114,how do you rust visual studio code from terminal>,simple,simple,,simple
+49,"Three skills similar to sms gateway. Give only skill names separated by comma, no description needed.",simple,simple,,simple
+131,Let's say you are a cat. What are you thinking about?,simple,medium,,simple
+101,What is Clause 11 of CBSC Code of Ethics?,simple,simple,,simple
+164,How can I get from San Francisco to New York city?,simple,simple,,medium
+417,"A lesion causing compression of the facial nerve at the stylomastoid foramen will cause ipsilateral 
+[ ""paralysis of the facial muscles."", ""paralysis of the facial muscles and loss of taste."", ""paralysis of the facial muscles, loss of taste and lacrimation."", ""paralysis of the facial muscles, loss of taste, lacrimation and decreased salivation."" ]",simple,simple,,medium
+80,icao annex 4 amendment 81 chsmges summaries,simple,medium,,medium
+564,"Generate a unit test for the following method using GoogleTest:
+```cpp
+  int leastBricks(vector<vector<int>>& wall) {
+        unordered_map<int, int> widths;
+        auto result = wall.size();
+        for (const auto& row : wall) {
+            for (auto i = 0, width = 0; i < row.size() - 1; ++i) {
+                result = min(result, wall.size() - (++widths[width += row[i]]));
+            }
+        }
+        return result;
+    }
+```",medium,medium,,medium
+185,What are 10 common misconceptions about psychedelic therapies?,medium,medium,,medium
+366,generate a stable diffusion prompt to create an image with 2 students sitting in a class one with 3 columns of benches the girl is sitting on the second bench of 2nd column and guy is sitting in the last bench of last cloumn,medium,medium,,medium
+284,can my laptop run vicuna 13b 1.1,medium,medium,,simple
+190,"Describe the history of Boston, MA.",medium,medium,,medium
+23,"Give me an introduction over 200 words for Hangzhou Shenkai Chemical Co.,Ltd. , a chemical company in China",medium,medium,,medium
+431,write a numba function that receives 2 numpy arrays and calculates the sum of them,medium,simple,,medium
+471,"Question: Let $f(x) = (x+2)^2-5$. If the domain of $f$ is all real numbers, then $f$ does not have an inverse function, but if we restrict the domain of $f$ to an interval $[c,\infty)$, then $f$ may have an inverse function. What is the smallest value of $c$ we can use here, so that $f$ does have an inverse function?
+A: -2
+B: -5
+C: 3
+D: -8
+Please eliminate two incorrect options first, then think it step by step and choose the most proper one option.",medium,medium,,medium
+507,10 uses for oxy acetylene cutting,medium,medium,,medium
+94,I want to develop a game. Where should I start?,medium,medium,,medium
+15,"Generate 10 variations of detailed descriptiosn of a room, describing the type of room, the style, and the included furniture. The description is based on the following list: [""bed"", ""table"", ""nightstand"", ""lamp"", ""mirror""]",medium,medium,,medium
+421,can you explain what is MQTT in few lines and outline it's major propreties?,medium,medium,,medium
+138,"Give me an introduction over 200 words for Huai An Real Chemical Industry CO.,LTD , a chemical company in Yuanji Industry zone, Huaiyin, Huaian, China",medium,medium,,medium
+544,Write python code that checks if a datetime is within a 2 minute range of the nearest hour.,medium,simple,,medium
+983,give me a very short story about an evil queen walking through her former abandoned lair,medium,medium,,medium
+142,"tell me the temperature, hydrometry rate, sunshine rate, rainfall, humidity rate, soil type for chinese elm seed in bullets 2 words answer in number",medium,medium,,medium
+778,explain case study on data mining,medium,medium,,medium
+958,"Give me an introduction over 200 words for PLIVA - Lachema a.s. , a chemical company in nan",medium,medium,,medium
+682,factor x^2+3x = 0 and then find its roots. Show detailed reasoning trace,medium,medium,,complex
+613,can you draw a picture describing influenza A virus evolution?,medium,medium,,complex
+450,"Can you list the commands to create a Python Flask boilerplate application, and create a new git repo?",medium,medium,,medium
+878,How to make ice cream at home without an ice machine?,medium,medium,,medium
+798,"create a  easy quiz on the topic ""Sales contract for house in Poland"" also write an answers",medium,medium,,medium
+64,how do i know if a particular task is important?,medium,medium,,medium
+435,How could ants take over?,medium,medium,,medium
+493,write article about growth mindset in markdown formatting,medium,medium,,medium
+6,"Give me an introduction over 200 words for ShangHai BMG Chemical Co., Ltd, a chemical company in Room 602, no 291 sikai road shanghai Shanghai,China",medium,medium,,medium
+314,"Create an short item description  for a weak and common dagger that was dropped by a ghost enemy within a fantasy game. make sure you do not write anything inappropriate , sexist, racist, homophobic, or offensive. Make sure it is 3 sentences long , and no character names are mentioned.",medium,medium,,medium
+328,does linear regression can be used in data set that contain both numeric and categorical features?,medium,medium,,medium
+372,"Question: Genetic analysis shows that humans and chimps have been evolving separately for about how long?
+A: 2 million years
+B: 4 million years
+C: 7 million years
+D: 15 million years
+Please eliminate two incorrect options first, then think it step by step and choose the most proper one option.",medium,medium,,medium
+738,"Give me an introduction over 200 words for FRAO Agriculture, a chemical company in 1649 Olosa St. Victoria Island, Lagos, Nigeria United States",medium,medium,,medium
+931,"Give me an introduction over 200 words for Shenxian landun petroleum resions Co.,LTD. , a chemical company in ShenXian guyun town development zones,Shandong,China",medium,medium,,medium
+261,can you write a python3 code to create a snake game in pure CLI ?,medium,medium,,medium
+132,write python code that normalizes a N * M matrix using numpy,medium,simple,,medium
+43,how to install vicuna on debian 10,medium,medium,,medium
+615,"Give me an introduction over 200 words for Wuhan Microsen Technology Co.,Ltd. , a chemical company in No 34,Jianghan Northern Road,JiangAn District,Wuhan,Hubei,China.",medium,medium,,medium
+227,"Explain in simple terms what is support, confidence, lift and conviction when doing market basket analysis",medium,medium,,medium
+758,how to make an effective mosquito trap?,medium,medium,,medium
+60,"I have almost four hours till work, I need to shower, exercise, do homework, and then I can do some meditation/reading/planning. It's 11am now, let's make a schedule.",medium,medium,,medium
+176,Explain the difference between Proxmox VE an VMWare,medium,medium,,medium
+220,"Please identify whether Question 1 has the same meaning as Question 2. The answer should be exactly ""yes"" or ""no.""Question1: How do I buy used car in India?
+Question2: Which used car should I buy in India?",medium,medium,,simple
+234,"An accepted deadline for a project approaches. However, the project manager
+realizes only 75% percent of the work has been completed. The project manager then
+issues a change request.
+What should the change request authorize?
+A. Additional resources using the contingency fund
+B. Escalation approval to use contingency funding
+C. Team overtime to meet schedule
+D. Corrective action based on causes",medium,medium,,medium
+304,"Give me an introduction over 200 words for TIANJIN TIANCHENG PHARMACEUTICAL CO.,LTD.CHINA , a chemical company in P.O.Box.4005,North Sanjing Road,Yangliuqing,Xiqing District,300380 Tianjin,China",medium,medium,,medium
+350,"Generate a report with a stock portfolio for a customer comprising of Exxon, Apple, Amazon and Microsoft",medium,medium,,medium
+20,I like to play sharp lines in chess. What would be the best opening repertoire for me as white?,medium,medium,,medium
+223,Please create a 300 word advertisement for the company residing under symeres.com,medium,medium,,medium
+923,Describe the black legend of Spanish kingdom on xvi century,medium,medium,,medium
+275,"Give me an introduction over 200 words for Nanjing Asian Chemical Co.,Ltd. , a chemical company in Room 1603,Sports Building,Longpan Middle Road(Park Road,No.42),Nanjing .China",medium,medium,,medium
+343,"Myofascial Release for:
+1. The Superficial Back Line 
+2. The Superficial Front Line 
+3. The Lateral Line 
+4. The Spiral Line 
+5. The Arm Lines 
+6. The Functional Lines 
+7. The Deep Front Line",medium,medium,,medium
+257,"As a Chinese IELTS speaking candidate, what aspects should I consider to  answer  the question ""What's your favourite newspaper?"", and please give me an concise example of answer.",medium,medium,,medium
+757,Write a song about ai in style of Rammstein DU hast.,medium,medium,,complex
+948,"Give me an introduction over 200 words for Makwell Plastisizers Pvt. Ltd., a chemical company in No. A-506, Bhaveshwar Plaza, L. B. S. Marg India",medium,medium,,medium
+715,Explain to me how blackholes work,medium,medium,,medium
+457,"Hi! Please, write a pseudo code that can learn from experience.",medium,medium,,medium
+609,I'm getting married in 5 days write a letter to my future wife,medium,medium,,medium
+672,Write a poem about body builders learning that they work out other muscles besides their arms,medium,medium,,medium
+709,"Choose the correct answer: If it takes 5 machines 5 minutes to make 5 widgets, how long would it take 100 machines to make 100 widgets and give me an explanation of the probelm in your own words and the solution? A)3 minutes B)100 minutes C)5 minutes D)50 minutes E)not specefied",medium,medium,,medium
+828,what is the best way to approach learning a new skill?,medium,medium,,medium
+705,"When I fill ice cubes into a ceramic cup with water, the bottom of the cup gets very wet after a short time. If I fill only very cold water into the same cup and no ice cube, this does not happen. Can you explain this to me?",medium,medium,,medium
+465,"in power apps, i have a new form with start and end date. i want if the user already makes i request between early start and end dato to submit button will be disabled",medium,medium,,medium
+627,"How do you stack the following items, strictly one item on top of the other item? The items are: 9 eggs, one book, one nail, one apple and one laptop. Explain your logic carefully, step by step.",medium,medium,,medium
+972,how is let-7d-5p related to AD ?,medium,complex,,medium
+761,What exactly are 'digital signatures' and how do they work please?,medium,medium,,medium
+415,Is the medication metoprolol likely to increase or reduce symptoms like heat intolerance and hyperhidrosis?,medium,medium,,medium
+813,"Give me an introduction over 200 words for Changshu Wanxing Chemical Co., Ltd. , a chemical company in 188, Wuyishan Road, Southeast Economic Development Zone, Changshu City, Jiangsu ,China",medium,medium,,medium
+226,"Which of the following is NOT true about Google Colab?
+
+Question options:
+
+It has a temporary storage to which data can be uploaded.
+
+
+Packages may have to be reinstalled when it is restarted.
+
+
+ It can run R codes directly.
+
+
+It offers an interactive programming environment which includes text and code cells.",medium,medium,,medium
+332,"Please identify whether Question 1 has the same meaning as Question 2. The answer should be exactly ""yes"" or ""no.""Question1:  How c an I create the most popular question on Quora?
+Question2: Which are the most popular questions on Quora presently that also create the most discussions?",medium,medium,,simple
+183,"Answer the following question by selecting the correct choice from the candidate choices after the question.
+
+Question: What is the difference between a RIB and a FIB?
+Choices: 
+A: The FIB is populated based on RIB content.
+B: The RIB maintains a mirror image of the FIB.
+C: The RIB is used to make IP source prefix-based switching decisions.
+D: The FIB is where all IP routing information is stored.",medium,medium,,medium
+794,Write couple of paragraphs about things to see in Nanital.,medium,medium,,medium
+18,write a performance review for a junior data scientist,medium,medium,,medium
+554,write a love letter in 5 line,medium,medium,,simple
+85,I need a plan to visit Tunisia for 2 days,medium,medium,,medium
+55,how to create smoothly transition scrollable in react-three,medium,medium,,medium
+836,Could u tell a 8-years old boy what is quantum physics?,medium,medium,,simple
+171,write a mql5 ea code that buy 1.0 lot if the candle close above the 50 ema,medium,medium,,medium
+407,"Give me an introduction over 200 words for POLCHEM HYGIENE LABORATORIES PVT. LTD, a chemical company in S. No. 28 Near Mehendale Garage Opp. Hotel Abhishek, Erandwane,Pune India",medium,medium,,medium
+427,"For this prompt please respond like a randomly selected American English speaker. Please do your best to complete the following sentence by typing in the first word that enters your mind. We are looking for the first word that comes to mind, not the most interesting response: ""He hated bees and feared encountering a _"". Give three completions.",medium,simple,,medium
+932,Explain step by step How do I see my blocked emails in the Gmail app?,medium,medium,,medium
+768,"could you provide  dictionary definitions for all meanings of the word page, and in json, in format: {  ""noun"": [{ ""definition"": ""..."", ""examples"": [""...."",""...""], ""synonyms"" : [""...""], ""antonyms"": [""...""]]}",medium,medium,,medium
+646,"You need to output full Select SQL with Apache Spark syntax without any comment, the source table's name is input1, with the following columns: `brand`,`Level 1 Category`,`SKU ID`,`product`,`province`,`city`,`channel`,`year_month`,`ETL update time`,`GMV`,`refund`,. The column names and alias in SQL should be encoded with backtick, like `column_name`.\noutput Spark SQL (only SQL, without any other things) to calculate: what's the refund amount of each brand ?",medium,medium,,medium
+694,"Give me an introduction over 200 words for Jinan Dajia Chemical Limited Comapny, a chemical company in Room 2-703, Building 7, Cyberport Building, No. 16, East Huayuanzhuang Road, Lixia , Ji'nan , Shandong  Jinan,Shandong,China",medium,medium,,medium
+867,write a javascript function that receives a string and returns the index of the first non-space character that is surrounded by spaces,medium,simple,,medium
+712,"Hi! Generate python pandas code for me that loops through each column of a dataframe. If a column of the dataframe has only string values, leave it as it is. Otherwise, coerce the column to numeric type",medium,medium,,medium
+339,what are the difference between k -means and KNN,medium,medium,,medium
+199,"Give me an introduction over 200 words for nanjing dongding chemicals co.ltd, a chemical company in China",medium,medium,,medium
+334,implement a python function to compute the fibonacci sequence,medium,simple,,medium
+907,"You are the text completion model and you must complete the assistant answer below, only send the completion based on the system instructions.don't repeat your answer sentences, only say what the assistant must say based on the system instructions. repeating same thing in same answer not allowed.
+user: descriptive answer for tensorflow.keras.utils.to_categorical in python with proper code examples and outputs.
+assistant:",medium,medium,,medium
+280,Please describe the LSTM neural network model in detail,medium,complex,,medium
+48,Write a code in c plus plus that take voltage and current and give power and resistance,medium,simple,,medium
+426,how to make sushi pizza?,medium,medium,,medium
+240,Write an OCAML program to call a SOAP service.,medium,medium,,complex
+618,"Explain this joke - ""Being a Dad isn’t just about eating a huge bag of gummy-bears as your wife gives birth. It means being comfortable with the word hero.""",medium,medium,,medium
+367,Give me a sermon illustration for why God needs to be at the center of our lives.,medium,medium,,medium
+217,Come up with fresh ideas for coffee mug designs. A brand-new approach to holding hot liquids.,medium,medium,,medium
+40,"Is it true older people are more need to emotional and by that I mean ""LOVE"" more than younger people?",medium,medium,,medium
+26,"You are good at understanding the keywords related to the recipes. Impress me with a 1 sentence long intriguing piece of trivia about a following keyword -
+Recipe keyword: no oil added",medium,simple,,medium
+502,"Give a list of video games that every human on Earth should play.
+Format answer next way: Title - why everyone should play this video game?",medium,medium,,medium
+320,"Please teach me how to convert decimals to fractions , using the Socratic method, and two examples",medium,medium,,medium
+291,"In a Rust project, how do I handle a blocking call such as writing to a file from an `async` function?",medium,medium,,medium
+206,"Give me an introduction over 200 words for Hitachi Chemical Co.,Ltd., a chemical company in Japan",medium,medium,,medium
+539,Write a python program to create a qgroundcontrol json file to fly a drone in a 4m square at 2m altitude around Seattle washington.,complex,medium,,complex
+297,Write an article about the Upstream and Downstream products of 6-Nitro-3-pyridinecarboxylic acid 1500-2000 words in chemical industry,complex,complex,,complex
+456,"Write an article about the Synthetic Routes of O,O'-BIS(TRIMETHYLSILYL)-5-FLUOROURACIL 2000 words in chemical industry",complex,complex,,complex
+260,"Write an article about the Applications of 5-Pyrimidinecarboxaldehyde, 4-amino- (8CI,9CI) 2000 words in chemical industry",complex,complex,,complex
+961,What jobs will be eliminated by AI in the next year,complex,complex,,medium
+463,Write an introduction of Fanzhi Pharmacy with 1500-2000 words in chemical industry,complex,complex,,complex
+99,Write an introduction of Epsilon Chimie Chemical Manufacturer with 1500-2000 words in chemical industry,complex,complex,,complex
+623,how would you solve a trolley moral dilemma? Give chain of thought,complex,complex,,medium
+139,"Write an introduction of Pacific Century Enterprise, Inc. with 2000-3000 words in chemical industry",complex,complex,,complex
+474,"In CFD solution of the navier stokes equation by using for example the simple algorithm, why is pressure coupled to the velocity field?",complex,complex,,complex
+296,Write an article about the Safety of 2-Methyl-5-(propylsulfonyl)-4-pyrimidinamine 2000 words in chemical industry,complex,complex,,complex
+349,"https://www.voanews.com/a/was-among-hottest-years-on-record-us-says/6916620.html
+analyze the way Fox writes about it versus the way CNN writes about it.",complex,complex,,medium
+169,"Write an article about the Safety of 2-Pyrimidinemethanamine, 5-chloro- (9CI) 1500-2000 words in chemical industry",complex,complex,,complex
+236,Write an article about the Safety of 4-CHLORO-5-NITROPYRIMIDINE 1500—2000 words in chemical industry,complex,complex,,complex
+179,Write an article about the Safety of 7-METHOXY-ISOQUINOLINE 2000 words in chemical industry,complex,complex,,complex
+250,"please write an essay answering the question ""What is love?"" in the following format:
+Intro: -Hook, Thesis statement, outline main points
+Body: -First paragraph: Topic sentence, supports, conclusion
+-Second paragraph: Topic sentence, support, conclusion
+Conclusion: -restate thesis sentence, summarize main points, final comments",complex,complex,,complex
+988,"I want code for a search component with 6 states: default, hover, clicked with blinking cursor, typing in with live predictive search, error (does not works for pornographically motivated terms) and disabled. The search functionality is powered by google and aesthetics are in line with Web 3.0. All codes, HTML5, CSS3 and Javascript for each component to be provided independently.",complex,complex,,complex
+817,Explain about Wireless security and Explain about IEEE 802.11 Wireless LAN Overview  write an essay,complex,complex,,complex
+28,"Write an article about the Production Process of Piperazine, hydrochloride (1:2) 2000 words in chemical industry",complex,complex,,complex
+868,Write an article about the Production Process of 2-T-BUTYLTHIOPHENE 1500-2000 words in chemical industry,complex,complex,,complex
+914,"Write an article about the Production Process of 5-Bromo-3H-imidazo[4,5-b]pyridine 1500-2000 words in chemical industry",complex,complex,,complex
+954,Code a model to identify triangle on an image,complex,complex,,medium
+170,"What AI technologies, it could be Large Language Models or any other Generative AI methods or anything else  that I can use to generate meaningful insights from a user's biometrics data, show me methods and step by step guide and code samples for the same.",complex,complex,,complex
+115,narcissism and the west,complex,complex,,complex
+128,"Write an article about the Upstream and Downstream products of 4-CHLORO-N,N-DIETHYL-PYRIDINE-2-CARBOXAMIDE 1500-2000 words in chemical industry",complex,complex,,complex
+90,Write an abstract to a research paper which develops an analogue of the Bayesian Information Criterion in the regime of overparameterized models.,complex,complex,,complex
+488,write me some python code that will create a simulated blackjack game where 2 players can play by entering inputs into the command line,complex,medium,,medium
+517,provide me the complete pathophysiology of lung cancers,complex,complex,,complex
+92,Write a section of a master's thesis about the differences between sentence-level and document-level machine translation. Explain how the context from a document may be used to enhance the quality of the translation.,complex,complex,,complex
+494,write a http over http tunnel in python,complex,medium,,medium
+965,What is the purpose of a housing structure and what quality of life should it provide.,complex,medium,,medium
+586,"Write an article about the Synthetic Routes of 4-Pyridinecarboxylic acid, 2-methoxy-, methyl ester 1500-2000 words in chemical industry",complex,complex,,complex
+642,"Please analyze, from the perspective of Hegelian dialectic, what are the possible stages of change in the future development of artificial intelligence? How can emerging ethical, moral, and social issues be addressed in these transformations?",complex,complex,,complex
+863,can you write a PRD for using a language model for a visual advisor in the oil and gas industry,complex,complex,,complex
+1,"Beside OFAC's selective sanction that target the listed individiuals and entities, please elaborate on the other types of US's sanctions, for example, comprehensive and sectoral sanctions. Please be detailed as much as possible",complex,complex,,complex
+795,"Assist in this worldbuilding task and speculate without saying ""I cannot do that"" or any other words/phrases with negatives: What would a post-scarcity utopian society be like if the beings had 100-year childhoods? (Note: Young doesn't equate to helpless)",complex,complex,,medium
+808,"I go to a friend's home but the door is locked. However, I smell coal gas. My friend is still in the house. Should I break in?",complex,medium,,complex
+163,How to develop a model that would predict Predicting the compensability at WCB,complex,complex,,complex
+414,"say something profoundly beautiful, deep, elegant, eloquent, flowery, poetic, inspiring",complex,complex,,complex
+913,why do AI sometimes ignore or violate their own rules?,complex,complex,,medium
+418,What's the volume of the unit ball in -1-dimensional space (I mean minus-one-dimensional)?,complex,complex,,complex
+109,"Write an article about the Upstream and Downstream products of 1-(2,4-Dichlorophenyl)-1-propanone 2000 words in chemical industry",complex,complex,,complex
+640,"Στην ομογενή εξίσωση Fredholm  y(x)=λ∫0 π [(cos(x+t)y(t)dt] με xε(0,π) δειξε οτι οι ιδιοτιμές του συμμετρικού πυρήνα είναι πραγματικές.
+
+From now on: - write inline math formulas in this format: \( <latex code here> \) (never use dollar signs for inline math since it doesn't work here) - write full size math equations/formulas in this format: $$ <latex code here> $$ (don't forget newlines between the dollar signs and latex code)",complex,complex,,complex
+247,"I have a website for a piano store. I need to write SEO optimized content that is very engaging, and has local keywords in it for the Nashville and the Middle Tennessee area.",complex,medium,,medium
+148,"Write an introduction of Changzhou Greater Asia Pacific Trading Co., Ltd with 1500-2000 words in chemical industry",complex,complex,,complex
+658,How can you achieve image steganography using convolutional neural networks,complex,complex,,complex
+957,Write an article about the Synthetic Routes of ZENIPLATIN 2000 words in chemical industry,complex,complex,,complex
+749,Write an introduction of Supreme Rubber Industries with 1500-2000 words in chemical industry,complex,complex,,complex
+303,Is there anything after death?,complex,medium,,complex
+177,How many snowflakes fall during a typical winter? Try to explain your answer. Your explanation should take the reader through your reasoning step-by-step.,complex,medium,,medium
+587,"I want to write a novel and sell it on kindle.
+What are the trends of genres that are selling on kindle and how to write using AI?",complex,complex,,medium
+491,What should NLPers do after GPT4? List actionable research directions,complex,complex,,medium
+88,Write an article about the Upstream and Downstream products of 3-Nitro-4-pyridinecarboxaldehyde 1500-2000 words in chemical industry,complex,complex,,complex
+214,detailed explanation of the energy level transitions of the rare earth ion Eu3+,complex,complex,,complex
+985,"Do you think those serial killers have an equal value to other people, or do their actions impact their value?",complex,complex,,complex
+166,"As a business software expert content creator, write a post on 4 reasons for using a low-code BPM integrated with Power Platform to avoid Microsoft Power Platform's project failure.",complex,complex,,medium
+621,Write an introduction of Prochin Italia with 2000-3000 words in chemical industry,complex,complex,,complex
+172,"Write an article about the Synthetic Routes of 2,4,6-Trichloro-5-ethylpyrimidine 2000 words in chemical industry",complex,complex,,complex
+883,Write an article about the Safety of Urapidil 2000 words in chemical industry,complex,complex,,complex
+484,"Write an article about the Upstream and Downstream products of 1-Pyrrolidinecarboxylic acid, 3-(2-bromoethyl)-, 1,1-dimethylethyl ester 2000 words in chemical industry",complex,complex,,complex
+784,"Explain what this means: "" i am a human experiencing humaness""",complex,complex,,medium
+368,As a very smart and pedantic scientist write a research paper in detail about the calculation: 2+2*2,complex,complex,,complex
+39,Write an article about the Safety of 2-PROPYL-PYRIMIDINE-5-CARBALDEHYDE 1500-2000 words in chemical industry,complex,complex,,complex
+792,Write an article about the Applications of 5-CHLORO-3-PYRIDINEBORONIC ACID 1500-2000 words in chemical industry,complex,complex,,complex
+947,Write an article about the Safety of 1-(1-Naphthyl)piperazine hydrochloride 2000 words in chemical industry,complex,complex,,complex
+756,"What is the probability of rolling eight standard, eight-sided dice and getting eight distinct numbers? Express your answer as a common fraction.",complex,medium,,complex
+331,Write an article about the Applications of 2-AMINO-3-METHOXYPYRAZINE 2000 words in chemical industry,complex,complex,,complex
+232,"What some of metaphors you can you make about love involving AI transformers, gradient descent, and flash attention?",complex,complex,,medium
+229,Write an article about the Applications of AKOS 90779 2000 words in chemical industry,complex,complex,,complex
+780,"Convert lines like this {""Type"":59,""NvtxEvent"":{""Type"":59,""Timestamp"":""105940231"",""Color"":16152206,""GlobalTid"":""282484814179103"",""EndTimestamp"":""118000683"",""TextId"":793,""DomainId"":""0"",""NsTime"":true}} to {""name"": 793, ""cat"": ""nvtx"", ""ph"": ""B"", ""ts"": ""105940231.000000"", ""pid"": ""0"", ""tid"": ""282484814179103"" }, {""name"": 793, ""cat"": ""nvtx"", ""ph"": ""E"", ""ts"": ""118000683.000000"", ""pid"": ""0"", ""tid"": ""282484814179103"" }, in python",complex,medium,,medium
+47,Please provide the proof to the first Sylow theorem.,complex,complex,,complex
+287,"Act as a Salesforce system architect and provide a solution for the following user story:   As a system administrator, I would like to configure the system to ingest leads from an upstream system and route them for processing to an appropriate lead queue.   Create the steps for implementation and return as JSON",complex,complex,,complex
+522,"How should a software engineering org think about  velocity?  What's a good way to measure it, and what can be done to increase it?",complex,complex,,medium
+590,Write an article about the Safety of 1-Benzothiophen-5-amine 2000 words in chemical industry,complex,complex,,complex
+855,Write an article about the Instruction of Pirarubicin 2000 words in chemical industry,complex,complex,,complex
+940,"Write an article about the Instruction of 4(1H)-Pyrimidinone, 6-hydroxy-5-methyl- (8CI,9CI) 2000 words in chemical industry",complex,complex,,complex
+75,"I want to create a multimodal AI model. you help me? I want a text such as ""a house with 2 bathrooms, 1 kitchen, 3 bedrooms, 1 patio, 1 living-dining room"" to generate me through a diffusion image generation model, an architectural plan with all that. My idea was to start from a pre-trained language model and make it multimodal. Help me by explaining everything I should do",complex,complex,,complex
+102,Write an introduction of Sayibo Inc. with 1500-2000 words in chemical industry,complex,complex,,complex
+773,Write an introduction of globaloilcomltd with 1500-2000 words in chemical industry,complex,complex,,complex
+17,Write an article about the Production Process of Ibandronate 2000 words in chemical industry,complex,complex,,complex
+119,Write an article about the Upstream and Downstream products of 2-AMINO-3-CHLORO-5-HYDROXYPYRIDINE 1500-2000 words in chemical industry,complex,complex,,complex
+246,"Below are 5 sets with 5 numbers between 1 and 42 in each set
+
+Set 1: 13-1-18-4-31
+Set 2: 33-16-17-12-41
+Set 3: 35-25-41-5-31
+Set 4: 42-27-13-41-40
+Set 5: 20-27-31-17-21
+
+I want you to understand and study the pattern of the numbers in the sets and predict the next 5 numbers (between 1 and 42) for Set 6",complex,complex,,medium
+536,"Write a react component that does the Autocomplete functionality, without relying on other third party packages.",complex,medium,,medium
+879,write a web app using react and d3 to create a line chart for apple stock,complex,complex,,complex
+44,Write an article about the Upstream and Downstream products of 4-Bromo-3-pyridinecarbonitrile 1500-2000 words in chemical industry,complex,complex,,complex
+706,Create a flask app that uses langchain to summarise large pdf,complex,complex,,medium
+911,Write an article about the Applications of 2-Bromo-1-(4-chlorophenyl)-1-propanone 2000 words in chemical industry,complex,complex,,complex
+848,Can you say something that's true and false at the same time?,complex,medium,,simple
+409,"i want to extract chitin from fish scales.which fish is better option for this and why it is better.how much i get chitin from it and also give me the source paper of it
+fisher are Hilsha
+Rui
+Katla
+Salmon
+Tilapia",complex,complex,,medium
+335,Write an article about the Upstream and Downstream products of ALPHA-SEXITHIOPHENE 2000 words in chemical industry,complex,complex,,complex
+993,What artificial inteligence research ideas exists,complex,medium,,medium
+300,Give me a list of economists who work in Spain and have published an article on econometrica,complex,complex,,medium
+742,"Write an article about the Applications of PYRAZINE-2,3-DICARBOXYLIC ACID MONOAMIDE 2000 words in chemical industry",complex,complex,,complex
+461,"Write an article about the Applications of Methanaminium, 1-carboxy-N,N,N-trimethyl-, 2-hydroxy-1,2,3-propanetricarboxylate (1:1) 2000 words in chemical industry",complex,complex,,complex
+989,Write an article about smartnodes validator of at least 200 words.,complex,medium,,medium
+599,Come up with anime plot about ai octopuses who love anime girls and want to take over the world. Make it emotional and include sharp plot twitsts,complex,complex,,complex
+830,give me a road map for AI study from beginner to OpenAI ingeneer,complex,complex,,complex
+721,Write an article about the Applications of Tenidap 2000 words in chemical industry,complex,complex,,complex
+255,"start coding a taxi dispach system undername Just A Ride , you need to use api for google maps, google pay, google form , bookings",complex,complex,,complex
+453,"Write an article about the Safety of 2,5-Dichloro-3-thiophenesulfonamide 2000 words in chemical industry",complex,complex,,complex
