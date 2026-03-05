@@ -10,7 +10,7 @@ from app.database import get_connection
 def make_callers(haiku_response, llama_response=None, gpt4o_response=None):
     return {
         "claude-haiku-4-5":        lambda p: haiku_response,
-        "llama-3.3-70b-versatile": lambda p: llama_response or ("Llama answer.", 80, 200),
+        "llama-3.3-70b": lambda p: llama_response or ("Llama answer.", 80, 200),
         "gpt-4o":                  lambda p: gpt4o_response or ("GPT-4o answer.", 100, 300),
     }
 
@@ -60,13 +60,13 @@ class TestEscalationChain:
             result = run_with_escalation("Explain quantum entanglement.", initial_tag="simple")
 
         assert result["escalated"] is True
-        assert result["model_used"] == "llama-3.3-70b-versatile"  # ← was claude-sonnet-4-6
+        assert result["model_used"] == "llama-3.3-70b"  # ← was claude-sonnet-4-6
         assert result["difficulty_tag"] == "medium"
 
     def test_medium_escalates_to_complex_on_low_confidence(self):
         callers = {
             "claude-haiku-4-5":        lambda p: ("Haiku answer.", 50, 10),
-            "llama-3.3-70b-versatile": lambda p: ("I'm not sure about this.", 80, 20),  # ← was sonnet
+            "llama-3.3-70b": lambda p: ("I'm not sure about this.", 80, 20),  # ← was sonnet
             "gpt-4o":                  lambda p: ("Here is a comprehensive answer.", 100, 400),
         }
         with patch("app.escalation.MODEL_CALLERS", callers):

@@ -1,14 +1,14 @@
 import os
 import anthropic
 import openai
-from groq import Groq
+from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
 
 load_dotenv()
 
 anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 openai_client    = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-groq_client      = Groq(api_key=os.getenv("GROQ_API_KEY"))
+cerebras_client  = Cerebras(api_key=os.getenv("CEREBRAS_API_KEY"))
 
 
 def call_haiku(prompt: str) -> tuple:
@@ -25,9 +25,9 @@ def call_haiku(prompt: str) -> tuple:
 
 
 def call_llama(prompt: str) -> tuple:
-    response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        max_tokens=2048,
+    response = cerebras_client.chat.completions.create(
+        model="llama-3.3-70b",
+        max_completion_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )
     return (
@@ -51,7 +51,7 @@ def call_gpt4o(prompt: str) -> tuple:
 
 
 MODEL_CALLERS = {
-    "claude-haiku-4-5":       call_haiku,
-    "llama-3.3-70b-versatile": call_llama,
+    "claude-haiku-4-5":        call_haiku,
+    "llama-3.3-70b":           call_llama,
     "gpt-4o":                  call_gpt4o,
 }
