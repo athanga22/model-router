@@ -9,7 +9,19 @@ load_dotenv()
 CLASSIFIER_MODEL = "llama3.1-8b"
 VALID_TAGS = {"simple", "medium", "complex"}
 
-_client = Cerebras(api_key=os.getenv("CEREBRAS_API_KEY"))
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        key = os.getenv("CEREBRAS_API_KEY")
+        if not key:
+            raise ValueError(
+                "CEREBRAS_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
+            )
+        _client = Cerebras(api_key=key)
+    return _client
 
 SYSTEM_PROMPT = """
 You are a difficulty classifier for prompts sent to an AI assistant.
@@ -133,7 +145,7 @@ def classify_prompt(prompt: str) -> str:
         classifier_input = classifier_input[:2000] + "... [truncated]"
 
     try:
-        response = _client.chat.completions.create(
+        response = _get_client().chat.completions.create(
             model=CLASSIFIER_MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
