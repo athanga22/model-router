@@ -2,7 +2,7 @@
 import os
 import json
 import time
-import psycopg2
+import psycopg
 import httpx
 import pandas as pd
 import plotly.express as px
@@ -114,7 +114,7 @@ st.markdown("""
 
 @st.cache_data(ttl=30)
 def load_stats():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL)
     cur  = conn.cursor()
     cur.execute("""
         SELECT COUNT(*),
@@ -145,7 +145,7 @@ def load_stats():
 
 @st.cache_data(ttl=30)
 def load_recent():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL)
     df = pd.read_sql("""
         SELECT created_at, difficulty_tag, model_used,
                cost_usd, cost_saved_usd, latency_ms, escalated

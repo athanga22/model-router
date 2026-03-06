@@ -1,7 +1,7 @@
 """Database connection and helpers."""
 
 import os
-import psycopg2
+import psycopg
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,28 +9,28 @@ load_dotenv()
 def get_connection():
     database_url = os.getenv("DATABASE_URL")
     if database_url:
-        return psycopg2.connect(database_url)
+        return psycopg.connect(database_url)
 
     host = os.getenv("POSTGRES_HOST")
     user = os.getenv("POSTGRES_USER")
     password = os.getenv("DB_PASSWORD")
     dbname = os.getenv("POSTGRES_DB")
 
-    # psycopg2 Unix socket: pass host as unix_socket_directory
+    # Unix socket (e.g. Cloud SQL): host is socket path
     if host and host.startswith("/"):
-        return psycopg2.connect(
+        return psycopg.connect(
             dbname=dbname,
             user=user,
             password=password,
             host=host,
-            port=5432
+            port=5432,
         )
 
-    return psycopg2.connect(
+    return psycopg.connect(
         host=host,
         user=user,
         password=password,
-        dbname=dbname
+        dbname=dbname,
     )
 
 def run_migrations():
