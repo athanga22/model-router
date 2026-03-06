@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.models import ChatRequest, ChatResponse, HealthResponse, StatsResponse
+from app.models import ChatRequest, ChatResponse, HealthResponse, StatsResponse, RecentRequest
 from app.router import route_prompt
 from app.classifier import classify_prompt
 from app.logger import log_request
@@ -323,6 +323,17 @@ def stats():
         """)
         model_usage = {r[0]: r[1] for r in cur.fetchall()}
 
+        cur.execute("""
+            SELECT DATE_TRUNC('hour', created_at) AS hr,
+                   SUM(cost_saved_usd) AS saved
+            FROM requests GROUP BY hr ORDER BY hr
+        """)
+        savings_rows = cur.fetchall()
+        savings_ts = [
+            {"hour": r[0].isoformat(), "saved": float(r[1])}
+            for r in savings_rows
+        ]
+
         cur.close()
         conn.close()
 
@@ -332,7 +343,43 @@ def stats():
             total_cost_saved_usd=float(row[2]),
             model_usage=model_usage,
             escalation_rate=float(row[3]),
+            savings_ts=savings_ts,
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/v1/recent", response_model=list[RecentRequest])
+def recent_requests(limit: int = 20):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT created_at, difficulty_tag, model_used,
+                   cost_usd, cost_saved_usd, latency_ms, escalated
+            FROM requests
+            ORDER BY created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        return [
+            RecentRequest(
+                created_at=r[0],
+                difficulty_tag=r[1],
+                model_used=r[2],
+                cost_usd=float(r[3]),
+                cost_saved_usd=float(r[4]),
+                latency_ms=int(r[5]),
+                escalated=bool(r[6]),
+            )
+            for r in rows
+        ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

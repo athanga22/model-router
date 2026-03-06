@@ -2,7 +2,6 @@
 import os
 import json
 import time
-import psycopg
 import httpx
 import pandas as pd
 import plotly.express as px
@@ -15,19 +14,14 @@ load_dotenv()
 # Config
 # ─────────────────────────────────────────────
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
-st.set_page_config(         
+st.set_page_config(
     page_title="Smart Router",
     page_icon="SR",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-
-if not DATABASE_URL:
-    st.error("DATABASE_URL environment variable is not set.")
-    st.stop()
 
 # ─────────────────────────────────────────────
 # CSS
@@ -109,50 +103,33 @@ st.markdown("""
 
 
 # ─────────────────────────────────────────────
-# DB helpers
+# Stats + recent via API
 # ─────────────────────────────────────────────
+
 
 @st.cache_data(ttl=30)
 def load_stats():
-    conn = psycopg.connect(DATABASE_URL)
-    cur  = conn.cursor()
-    cur.execute("""
-        SELECT COUNT(*),
-               COALESCE(SUM(cost_usd),0),
-               COALESCE(SUM(cost_saved_usd),0),
-               COALESCE(AVG(escalated::int)*100,0)
-        FROM requests
-    """)
-    row = cur.fetchone()
-    cur.execute("SELECT model_used, COUNT(*) FROM requests GROUP BY model_used")
-    model_rows = cur.fetchall()
-    cur.execute("""
-        SELECT DATE_TRUNC('hour', created_at) AS hr,
-               SUM(cost_saved_usd) AS saved
-        FROM requests GROUP BY hr ORDER BY hr
-    """)
-    savings_rows = cur.fetchall()
-    cur.close(); conn.close()
+    resp = httpx.get(f"{API_BASE_URL}/v1/stats", timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
     return {
-        "total":      int(row[0]),
-        "cost":       float(row[1]),
-        "saved":      float(row[2]),
-        "esc_pct":    float(row[3]),
-        "model_dist": {r[0]: r[1] for r in model_rows},
-        "savings_ts": savings_rows,
+        "total": int(data["total_requests"]),
+        "cost": float(data["total_cost_usd"]),
+        "saved": float(data["total_cost_saved_usd"]),
+        "esc_pct": float(data["escalation_rate"] * 100.0),
+        "model_dist": data.get("model_usage", {}),
+        "savings_ts": data.get("savings_ts", []),
     }
 
 
 @st.cache_data(ttl=30)
 def load_recent():
-    conn = psycopg.connect(DATABASE_URL)
-    df = pd.read_sql("""
-        SELECT created_at, difficulty_tag, model_used,
-               cost_usd, cost_saved_usd, latency_ms, escalated
-        FROM requests ORDER BY created_at DESC LIMIT 20
-    """, conn)
-    conn.close()
-    return df
+    resp = httpx.get(f"{API_BASE_URL}/v1/recent?limit=20", timeout=10)
+    resp.raise_for_status()
+    rows = resp.json()
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows)
 
 
 # ─────────────────────────────────────────────
@@ -246,7 +223,7 @@ with tab_dash:
 
         with ch2:
             if stats["savings_ts"]:
-                ts = pd.DataFrame(stats["savings_ts"], columns=["hour", "saved"])
+                ts = pd.DataFrame(stats["savings_ts"])
                 ts["cumulative_saved"] = ts["saved"].cumsum()
                 fig2 = px.area(ts, x="hour", y="cumulative_saved",
                                title="Cumulative Savings",

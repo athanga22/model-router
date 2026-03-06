@@ -26,3 +26,15 @@ class StatsResponse(BaseModel):
     total_cost_saved_usd: float
     model_usage: dict
     escalation_rate: float
+    # Time series of savings by hour for dashboard
+    savings_ts: list[dict] = []
+
+
+class RecentRequest(BaseModel):
+    created_at: datetime
+    difficulty_tag: str
+    model_used: str
+    cost_usd: float
+    cost_saved_usd: float
+    latency_ms: int
+    escalated: bool
