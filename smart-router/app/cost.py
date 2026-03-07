@@ -3,10 +3,10 @@ from typing import Tuple
 RATES = {
     "claude-haiku-4-5":  (0.001,    0.005),
     "llama-3.3-70b":     (0.00007,  0.00007),  # Cerebras ~$0.07/MTok blended
-    "gpt-4o":            (0.005,    0.015),
+    "gpt-4o":            (0.0025, 0.010),
 }
 
-GPT4O_RATES = (0.005, 0.015)
+GPT4O_RATES = (0.0025, 0.010)
 
 MODEL_FOR_TAG = {
     "simple":  "claude-haiku-4-5",
