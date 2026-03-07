@@ -27,18 +27,19 @@ User Request
 └────────┬────────┘
          │
          ▼
-┌─────────────────┐
-│  Phi-3 Classifier│  ← Runs locally via Ollama (free, ~120ms)
-│  (Ollama local) │    Tags prompt: simple / medium / complex
-└────────┬────────┘
+┌──────────────────────┐
+│  Cerebras Classifier │  ← Llama 3.1 8B via Cerebras (~100ms)
+│  (Llama 3.1 8B)      │    Tags prompt: simple / medium / complex
+└────────┬─────────────┘
          │
     ┌────┴─────────────────┐
-    │                      │
+    │                      │                      │
     ▼                      ▼                      ▼
 ┌──────────┐      ┌──────────────┐      ┌──────────────┐
-│  Haiku   │      │  Llama 3 70B │      │   GPT-4o     │
-│ (Simple) │      │   (Medium)   │      │  (Complex)   │
-│ $1/MTok  │      │ $0.06/MTok   │      │  $5/MTok     │
+│  Haiku   │      │  Llama 3.3   │      │   GPT-4o     │
+│ (Simple) │      │  70B via     │      │  (Complex)   │
+│ $1/MTok  │      │  Cerebras    │      │  $5/MTok     │
+│          │      │ $0.07/MTok   │      │              │
 └──────────┘      └──────────────┘      └──────────────┘
          │
          ▼
@@ -72,13 +73,14 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 | Layer | Tool |
 |-------|------|
 | API Framework | FastAPI |
-| Classifier | Phi-3 mini via Ollama (local) |
+| Classifier | Llama 3.1 8B via Cerebras |
 | Simple Model | Claude Haiku 4.5 (Anthropic) |
 | Medium Model | Llama 3.3 70B (Cerebras) |
 | Complex Model | GPT-4o (OpenAI) |
-| Database | PostgreSQL via Docker |
-| Dashboard | Streamlit + Plotly |
+| Database | PostgreSQL (Cloud SQL in prod) |
+| Dashboard | Streamlit + Plotly (Streamlit Community Cloud) |
 | Tests | pytest |
+| CI/CD | GitHub Actions → Cloud Run |
 
 ---
 
@@ -86,13 +88,13 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 
 The classifier is evaluated on a labeled set of prompts:
 
-| Metric | Target |
+| Metric | Result |
 |--------|--------|
-| Labeled prompts | 20 (8 simple, 7 medium, 5 complex) |
-| Accuracy threshold | ≥ 80% |
+| Labeled prompts | 300 |
+| Accuracy | 77% |
 | Edge cases | Empty, long, non-English |
 
-Run the classifier tests to see the accuracy report (from `smart-router/`):
+Run the classifier tests:
 
 ```bash
 pytest tests/test_classifier.py -v -s
@@ -104,8 +106,8 @@ pytest tests/test_classifier.py -v -s
 
 ### Prerequisites
 - Docker + Docker Compose
-- Python 3.9+
-- Ollama installed ([ollama.ai](https://ollama.ai))
+- Python 3.11+
+- API keys: Anthropic, OpenAI, Cerebras
 
 ### 1. Clone and install
 ```bash
@@ -116,33 +118,28 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Pull the classifier model
-```bash
-ollama pull phi3:mini
-```
-
-### 3. Configure environment
+### 2. Configure environment
 ```bash
 cp .env.example .env
 # Fill in your API keys in .env
 ```
 
-### 4. Start the database
+### 3. Start the database
 ```bash
 docker-compose up -d
 ```
 
-### 5. Run migrations
+### 4. Run migrations
 ```bash
-python app/database.py
+python -m app.database
 ```
 
-### 6. Start the API
+### 5. Start the API
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 7. Launch the dashboard
+### 6. Launch the dashboard
 ```bash
 streamlit run dashboard.py
 ```
@@ -151,7 +148,7 @@ streamlit run dashboard.py
 
 ## API Usage
 
-### Route a prompt
+### Route a prompt (blocking)
 ```bash
 curl -X POST http://localhost:8000/v1/chat \
   -H "Content-Type: application/json" \
@@ -168,6 +165,22 @@ Response:
   "latency_ms": 1184,
   "escalated": false
 }
+```
+
+### Route a prompt (streaming)
+```bash
+curl -X POST http://localhost:8000/v1/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain quantum entanglement"}'
+```
+
+Streams newline-delimited JSON frames:
+```
+{"type": "metadata", "difficulty_tag": "complex", "model_used": "gpt-4o", "escalated": false}
+{"type": "token", "text": "Quantum"}
+{"type": "token", "text": " entanglement"}
+...
+{"type": "done", "cost_usd": 0.000312, "cost_saved_usd": 0.0, "latency_ms": 2100}
 ```
 
 ### Check health
@@ -187,30 +200,50 @@ Auto-generated OpenAPI docs available at: `http://localhost:8000/docs`
 
 ## Running Tests
 
-**Unit tests** (no API keys; mocks for LLM calls), from `smart-router/`:
+**Unit tests** (mocks for LLM calls), from `smart-router/`:
 
 ```bash
 pytest tests/test_classifier.py tests/test_escalation.py -v
 ```
 
-**Integration tests** (real classifier + LLM calls; requires Ollama + API keys in `.env`):
+**Integration tests** (real LLM calls; requires API keys in `.env`):
 
 ```bash
 pytest tests/test_integration.py -v -s
 ```
 
-Or run everything except integration:
+Or run everything:
 
 ```bash
-pytest tests/ -v -m "not integration"
+pytest tests/ -v --tb=short
 ```
 
 ---
 
 ## Dashboard
 
-The Streamlit dashboard shows live cost savings, model usage distribution,
-and projected savings at scale. From `smart-router/`: launch with:
+The Streamlit dashboard has two tabs:
+
+- **Dashboard** — live cost savings, model usage distribution, projected savings at scale
+- **Try It Live** — send prompts and watch the routing decision appear in real time, then see tokens stream in as the model responds
+
+Deployed on Streamlit Community Cloud. To run locally:
 ```bash
 streamlit run dashboard.py
 ```
+
+---
+
+## Deployment
+
+The project deploys automatically via GitHub Actions on push to `main`:
+
+1. Runs tests against a Postgres service container
+2. Builds and pushes a Docker image to GCP Artifact Registry
+3. Deploys to Cloud Run with Cloud SQL
+
+Required secrets in GitHub and GCP Secret Manager:
+- `ANTHROPIC_API_KEY`
+- `OPENAI_API_KEY`
+- `CEREBRAS_API_KEY`
+- `DB_PASSWORD`
