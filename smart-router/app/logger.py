@@ -11,19 +11,17 @@ def log_request(
     escalated: bool = False,
     cost_saved_usd: float = 0.0
 ):
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO requests (
-            raw_prompt, difficulty_tag, model_used,
-            input_tokens, output_tokens, cost_usd,
-            latency_ms, escalated, cost_saved_usd
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (
-        raw_prompt, difficulty_tag, model_used,
-        input_tokens, output_tokens, cost_usd,
-        latency_ms, escalated, cost_saved_usd
-    ))
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO requests (
+                    raw_prompt, difficulty_tag, model_used,
+                    input_tokens, output_tokens, cost_usd,
+                    latency_ms, escalated, cost_saved_usd
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                raw_prompt, difficulty_tag, model_used,
+                input_tokens, output_tokens, cost_usd,
+                latency_ms, escalated, cost_saved_usd
+            ))
+            conn.commit()
