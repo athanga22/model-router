@@ -10,7 +10,7 @@ sacrificing response quality.
 
 ## The Problem
 
-GPT-4o costs ~$5-15/1M tokens. Most real-world tasks don't need it.
+GPT-4o costs ~$2.50-10/1M tokens. Most real-world tasks don't need it.
 This router classifies every prompt and sends it to the right model automatically.
 
 **Why this matters:** Teams often default to one expensive model for everything. This project shows how to cut cost while keeping quality: classify prompt difficulty, route to the cheapest capable model, and auto-escalate when a response is low-confidence. The result is measurable savings (logged per request) and a single API your clients call.
@@ -32,13 +32,13 @@ User Request
 │  (Llama 3.1 8B)      │    Tags prompt: simple / medium / complex
 └────────┬─────────────┘
          │
-    ┌────┴─────────────────┐
+    ┌────┴─────────────────┌──────────────────────┐
     │                      │                      │
     ▼                      ▼                      ▼
 ┌──────────┐      ┌──────────────┐      ┌──────────────┐
 │  Haiku   │      │  Llama 3.3   │      │   GPT-4o     │
 │ (Simple) │      │  70B via     │      │  (Complex)   │
-│ $1/MTok  │      │  Cerebras    │      │  $5/MTok     │
+│ $1/MTok  │      │  Cerebras    │      │  $2.5/MTok   │
 │          │      │ $0.07/MTok   │      │              │
 └──────────┘      └──────────────┘      └──────────────┘
          │
@@ -78,7 +78,7 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 | Medium Model | Llama 3.3 70B (Cerebras) |
 | Complex Model | GPT-4o (OpenAI) |
 | Database | PostgreSQL (Cloud SQL in prod) |
-| Dashboard | Streamlit + Plotly (Streamlit Community Cloud) |
+| Dashboard | Streamlit + Plotly (Streamlit Community Cloud; reads from API only) |
 | Tests | pytest |
 | CI/CD | GitHub Actions → Cloud Run |
 
@@ -123,6 +123,9 @@ pip install -r requirements.txt
 cp .env.example .env
 # Fill in your API keys in .env
 ```
+Environment variables (e.g. `DATABASE_URL`) override values in `.env`. For local runs, if you've set `DATABASE_URL` in your shell, unset it so `.env` is used: `unset DATABASE_URL`.
+
+For the dashboard: it talks to the API only (no direct database access). Locally it defaults to `API_BASE_URL=http://localhost:8000`. To point the dashboard at a remote API (e.g. Cloud Run), set `API_BASE_URL` in `.env` or in Streamlit Community Cloud app secrets.
 
 ### 3. Start the database
 ```bash
@@ -174,11 +177,10 @@ curl -X POST http://localhost:8000/v1/chat/stream \
   -d '{"prompt": "Explain quantum entanglement"}'
 ```
 
-Streams newline-delimited JSON frames:
+Streams newline-delimited JSON frames: `metadata` (routing), then `token` (text chunks), then `done` (cost, latency). On classifier or model failure, a single `{"type": "error", "message": "..."}` frame is sent (message is the exception string, e.g. classifier_error or escalation_model_failed).
 ```
 {"type": "metadata", "difficulty_tag": "complex", "model_used": "gpt-4o", "escalated": false}
 {"type": "token", "text": "Quantum"}
-{"type": "token", "text": " entanglement"}
 ...
 {"type": "done", "cost_usd": 0.000312, "cost_saved_usd": 0.0, "latency_ms": 2100}
 ```
@@ -188,10 +190,23 @@ Streams newline-delimited JSON frames:
 curl http://localhost:8000/v1/health
 ```
 
+Response (200): `status` is always `"ok"`. `db` is `"ok"` when the database is reachable, or `"error: <details>"` when not. `classifier` is `"ok"` when the classifier is reachable, or `"error: <details>"` when not.
+```json
+{"status": "ok", "db": "ok", "classifier": "ok"}
+```
+
 ### Get cost stats
 ```bash
 curl http://localhost:8000/v1/stats
 ```
+
+Response (200): JSON with `total_requests`, `total_cost_usd`, `total_cost_saved_usd`, `model_usage`, `escalation_rate`, and `savings_ts` (hourly savings). Returns 500 when the database is unreachable.
+
+### Get recent requests
+```bash
+curl "http://localhost:8000/v1/recent?limit=20"
+```
+Response (200): JSON array of recent requests, each with `created_at`, `difficulty_tag`, `model_used`, `cost_usd`, `cost_saved_usd`, `latency_ms`, `escalated`. Returns 500 when the database is unreachable.
 
 ### API Docs
 Auto-generated OpenAPI docs available at: `http://localhost:8000/docs`
@@ -222,12 +237,14 @@ pytest tests/ -v --tb=short
 
 ## Dashboard
 
-The Streamlit dashboard has two tabs:
+The Streamlit dashboard reads all data from the API (`/v1/stats`, `/v1/recent`, `/v1/chat/stream`). It does not connect to the database directly.
 
-- **Dashboard** — live cost savings, model usage distribution, projected savings at scale
-- **Try It Live** — send prompts and watch the routing decision appear in real time, then see tokens stream in as the model responds
+Two tabs:
 
-Deployed on Streamlit Community Cloud. To run locally:
+- **Dashboard** — aggregate cost savings, model usage distribution, savings time series, projected savings at scale, and a table of recent requests
+- **Try It Live** — send prompts; routing decision and streaming response from the chosen model
+
+Deployed on Streamlit Community Cloud. For that deployment, set `API_BASE_URL` in the app secrets to your Cloud Run service URL. To run locally (against the API on port 8000 by default):
 ```bash
 streamlit run dashboard.py
 ```
@@ -247,3 +264,5 @@ Required secrets in GitHub and GCP Secret Manager:
 - `OPENAI_API_KEY`
 - `CEREBRAS_API_KEY`
 - `DB_PASSWORD`
+
+For the dashboard on Streamlit Community Cloud, set `API_BASE_URL` in the app's secrets to the Cloud Run service URL so it can call the API.
