@@ -1,5 +1,6 @@
 """Smart Router API — FastAPI entry point."""
 import json
+import logging
 import time
 import os
 
@@ -22,6 +23,13 @@ from app.escalation import should_escalate, get_next_tier
 
 load_dotenv()
 
+# ── Structured logging to stdout ──────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+_logger = logging.getLogger(__name__)
+
 app = FastAPI(title="Smart Router", version="1.0.0")
 
 # ── Auth (optional when API_KEY unset — set API_KEY on Cloud Run + Streamlit secrets) ──
@@ -34,6 +42,26 @@ def _require_api_key(key: str | None = Security(_API_KEY_HEADER)):
         return  # no auth when not configured (local dev)
     if key != expected:
         raise HTTPException(status_code=403, detail="invalid_api_key")
+
+
+@app.on_event("startup")
+async def _startup():
+    """Validate configuration and log startup status."""
+    missing_keys = [v for v in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "CEREBRAS_API_KEY") if not os.getenv(v)]
+    if missing_keys:
+        _logger.error("Missing required API keys: %s — requests will fail until set", missing_keys)
+
+    if not os.getenv("API_KEY"):
+        _logger.warning("API_KEY not set — authentication is DISABLED (acceptable for local dev only)")
+
+    if not os.getenv("DASHBOARD_URL"):
+        _logger.warning("DASHBOARD_URL not set — CORS using hardcoded default origin")
+
+    _logger.info(
+        "Smart Router started | auth=%s | dashboard_origin=%s",
+        "enabled" if os.getenv("API_KEY") else "disabled",
+        _dashboard_url,
+    )
 
 
 # ── Rate limiter (per IP; Streamlit Cloud shares one IP — use 60/min for demo) ──
@@ -92,7 +120,8 @@ def chat(req: ChatRequest, request: Request):
     try:
         result = route_prompt(req.prompt)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _logger.error("route_prompt failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="internal_error")
 
     latency_ms = int((time.time() - start) * 1000)
 
@@ -108,8 +137,8 @@ def chat(req: ChatRequest, request: Request):
             escalated=result["escalated"],
             cost_saved_usd=result["cost_saved_usd"],
         )
-    except Exception:
-        pass  # logging failure is non-fatal
+    except Exception as log_exc:
+        _logger.warning("request logging failed: %s", log_exc)
 
     return ChatResponse(
         response=result["response"],
@@ -293,8 +322,8 @@ def chat_stream(req: ChatRequest, request: Request):
                 escalated=escalated,
                 cost_saved_usd=cost_saved_usd,
             )
-        except Exception:
-            pass
+        except Exception as log_exc:
+            _logger.warning("stream request logging failed: %s", log_exc)
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
 
