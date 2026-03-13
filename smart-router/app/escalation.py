@@ -9,7 +9,8 @@ ESCALATION_CHAIN = {
     "complex": None,  # top tier — no escalation possible
 }
 
-# Patterns that trigger escalation
+# Substring matches — false positives possible (e.g. "I cannot stress enough…").
+# Acceptable for a demo; tighten if escalation_rate is higher than expected.
 LOW_CONFIDENCE_PATTERNS = [
     "i don't know",
     "i do not know",

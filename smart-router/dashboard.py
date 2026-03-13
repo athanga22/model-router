@@ -1,7 +1,7 @@
 """Smart Router Dashboard — metrics + live streaming chat."""
+import html
 import os
 import json
-import time
 import httpx
 import pandas as pd
 import plotly.express as px
@@ -14,7 +14,9 @@ load_dotenv()
 # Config
 # ─────────────────────────────────────────────
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
+# Must match Cloud Run API_KEY; Streamlit Cloud sets this in Secrets
+HEADERS = {"X-API-Key": os.getenv("API_KEY", "")}
 
 st.set_page_config(
     page_title="Smart Router",
@@ -109,7 +111,7 @@ st.markdown("""
 
 @st.cache_data(ttl=30)
 def load_stats():
-    resp = httpx.get(f"{API_BASE_URL}/v1/stats", timeout=10)
+    resp = httpx.get(f"{API_BASE_URL}/v1/stats", headers=HEADERS, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     return {
@@ -124,7 +126,7 @@ def load_stats():
 
 @st.cache_data(ttl=30)
 def load_recent():
-    resp = httpx.get(f"{API_BASE_URL}/v1/recent?limit=20", timeout=10)
+    resp = httpx.get(f"{API_BASE_URL}/v1/recent?limit=20", headers=HEADERS, timeout=10)
     resp.raise_for_status()
     rows = resp.json()
     if not rows:
@@ -145,7 +147,9 @@ def stream_chat(prompt: str):
       {"type": "error",    "message": "..."}
     """
     url = f"{API_BASE_URL}/v1/chat/stream"
-    with httpx.stream("POST", url, json={"prompt": prompt}, timeout=120) as resp:
+    with httpx.stream(
+        "POST", url, json={"prompt": prompt}, headers=HEADERS, timeout=120
+    ) as resp:
         resp.raise_for_status()
         for line in resp.iter_lines():
             line = line.strip()
@@ -278,48 +282,51 @@ with tab_chat:
         "Tokens stream in as the model generates them."
     )
 
-    # Manage input clearing via session state (must happen before widget instantiation)
-    if "chat_input" not in st.session_state:
-        st.session_state["chat_input"] = ""
-    if st.session_state.get("clear_chat_input", False):
-        st.session_state["chat_input"] = ""
-        st.session_state["clear_chat_input"] = False
+    if "last_exchange" not in st.session_state:
+        st.session_state["last_exchange"] = None
 
-    # Top container for current Q&A (always above the input)
-    chat_area = st.container()
-
-    st.markdown("---")
-
-    # Centered input in the middle of the page
-    left, center, right = st.columns([1, 2, 1])
-    with center:
-        user_input = st.text_area(
-            "Your prompt",
-            placeholder="Ask anything — simple, medium, or complex…",
-            height=80,
-            label_visibility="collapsed",
-            key="chat_input",
+    # Render last exchange (persists across reruns)
+    if st.session_state["last_exchange"]:
+        ex = st.session_state["last_exchange"]
+        esc_badge = (
+            ' <span class="badge badge-escalated">↑ escalated</span>'
+            if ex["escalated"]
+            else ""
         )
-        send = st.button("Send ▶", use_container_width=True, type="primary")
+        st.markdown(
+            f'<div class="chat-user">{html.escape(ex["prompt"])}</div>'
+            '<div class="clearfix"></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="routing-header">'
+            f'<span class="badge badge-{ex["tag"]}">{ex["tag"]}</span>'
+            f"{esc_badge}"
+            f'  →  <strong>{ex["model"]}</strong>'
+            f'</div><div class="clearfix"></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="chat-assistant">{html.escape(ex["response"])}</div>'
+            '<div class="clearfix"></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="chat-meta">'
+            f'${ex["cost"]:.6f} &nbsp;·&nbsp; ${ex["saved"]:.6f} saved &nbsp;·&nbsp; {ex["latency"]} ms'
+            f'</div><div class="clearfix"></div>',
+            unsafe_allow_html=True,
+        )
+
+    user_input = st.chat_input("Ask anything — simple, medium, or complex…")
 
     # ── Handle send ───────────────────────────────────────────────────
-    if send and user_input.strip():
+    if user_input:
         prompt = user_input.strip()
 
-        # Mark for clearing the text input on the next run
-        st.session_state["clear_chat_input"] = True
-
-        # Render Q&A above the input
-        with chat_area:
-            st.markdown(
-                f'<div class="chat-user">{prompt}</div>'
-                '<div class="clearfix"></div>',
-                unsafe_allow_html=True,
-            )
-
-            routing_ph  = st.empty()
-            response_ph = st.empty()
-            meta_ph     = st.empty()
+        routing_ph  = st.empty()
+        response_ph = st.empty()
+        meta_ph     = st.empty()
 
         routing_ph.markdown(
             '<div class="routing-header">Classifying…</div>'
@@ -329,7 +336,6 @@ with tab_chat:
 
         accumulated = ""
         metadata    = {}
-        done_data   = {}
         error_msg   = None
 
         try:
@@ -358,7 +364,6 @@ with tab_chat:
                     )
 
                 elif ftype == "done":
-                    done_data   = frame
                     escalated   = frame.get("escalated", False)
                     final_tag   = frame.get("difficulty_tag", metadata.get("difficulty_tag", ""))
                     final_model = frame.get("model_used",     metadata.get("model_used", ""))
@@ -400,3 +405,14 @@ with tab_chat:
 
         if error_msg:
             routing_ph.error(f"{error_msg}")
+        else:
+            st.session_state["last_exchange"] = {
+                "prompt":   prompt,
+                "response": accumulated,
+                "tag":      final_tag,
+                "model":    final_model,
+                "escalated": escalated,
+                "cost":     cost,
+                "saved":    saved,
+                "latency":  latency,
+            }

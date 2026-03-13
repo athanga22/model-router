@@ -116,6 +116,8 @@ cd smart-router
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+# Dashboard + eval scripts (scikit-learn, datasets, etc.) need the eval extras:
+# pip install -r requirements-eval.txt
 ```
 
 ### 2. Configure environment
@@ -149,9 +151,35 @@ streamlit run dashboard.py
 
 ---
 
+## API access (auth)
+
+When **`API_KEY`** is set on the server (Cloud Run env), every endpoint **except `GET /v1/health`** requires the same key in the **`X-API-Key`** header. Omit `API_KEY` locally if you want open access for development.
+
+- **Cloud Run:** set `API_KEY` to a long random string (e.g. `python -c "import secrets; print(secrets.token_hex(32))"`).
+- **Streamlit Cloud:** set the **same** value in app secrets as `API_KEY`, plus `API_BASE_URL` to your Cloud Run URL. The dashboard calls the API **server-side**, so all dashboard users share one outbound IP — rate limits are set to **60/min** on chat endpoints to avoid blocking demos.
+
+Generate a key:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Example with auth (replace `YOUR_CLOUD_RUN_URL` and `<your-key>`):
+
+```bash
+curl -X POST https://YOUR_CLOUD_RUN_URL/v1/chat \
+  -H "X-API-Key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain the CAP theorem"}'
+```
+
+---
+
 ## API Usage
 
 ### Route a prompt (blocking)
+If `API_KEY` is set, add `-H "X-API-Key: <your-key>"` to all `curl` examples below.
+
 ```bash
 curl -X POST http://localhost:8000/v1/chat \
   -H "Content-Type: application/json" \

@@ -24,4 +24,3 @@ def log_request(
                 input_tokens, output_tokens, cost_usd,
                 latency_ms, escalated, cost_saved_usd
             ))
-            conn.commit()

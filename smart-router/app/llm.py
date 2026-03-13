@@ -6,10 +6,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-openai_client    = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+_anthropic_client = None
+_openai_client = None
 _cerebras_client = None
+
+
+def _get_anthropic_client():
+    global _anthropic_client
+    if _anthropic_client is None:
+        key = os.getenv("ANTHROPIC_API_KEY")
+        if not key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
+            )
+        _anthropic_client = anthropic.Anthropic(api_key=key)
+    return _anthropic_client
+
+
+def _get_openai_client():
+    global _openai_client
+    if _openai_client is None:
+        key = os.getenv("OPENAI_API_KEY")
+        if not key:
+            raise ValueError(
+                "OPENAI_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
+            )
+        _openai_client = openai.OpenAI(api_key=key)
+    return _openai_client
 
 
 def _get_cerebras_client():
@@ -25,7 +48,7 @@ def _get_cerebras_client():
 
 
 def call_haiku(prompt: str) -> tuple:
-    message = anthropic_client.messages.create(
+    message = _get_anthropic_client().messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}]
@@ -39,7 +62,7 @@ def call_haiku(prompt: str) -> tuple:
 
 def call_llama(prompt: str) -> tuple:
     response = _get_cerebras_client().chat.completions.create(
-        model="llama-3.3-70b",
+        model="llama3.3-70b",
         max_completion_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -51,7 +74,7 @@ def call_llama(prompt: str) -> tuple:
 
 
 def call_gpt4o(prompt: str) -> tuple:
-    response = openai_client.chat.completions.create(
+    response = _get_openai_client().chat.completions.create(
         model="gpt-4o",
         max_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
