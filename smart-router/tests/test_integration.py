@@ -11,10 +11,10 @@ INTEGRATION_SUITE = [
     ("Translate 'hello' to Spanish.",               "claude-haiku-4-5"),
     ("What is 25% of 80?",                          "claude-haiku-4-5"),
 
-    # MEDIUM → llama-3.3-70b
-    ("Compare REST and GraphQL and when to use each.",              "llama-3.3-70b"),
-    ("Write a Python function to find duplicates in a list.",       "llama-3.3-70b"),
-    ("What are the pros and cons of microservices architecture?",   "llama-3.3-70b"),
+    # MEDIUM → gpt-oss-120b
+    ("Compare REST and GraphQL and when to use each.",              "gpt-oss-120b"),
+    ("Write a Python function to find duplicates in a list.",       "gpt-oss-120b"),
+    ("What are the pros and cons of microservices architecture?",   "gpt-oss-120b"),
 
     # COMPLEX → gpt-4o
     ("Design a fault-tolerant microservices architecture for an e-commerce platform with 5M daily users.", "gpt-4o"),
