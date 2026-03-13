@@ -60,9 +60,9 @@ def call_haiku(prompt: str) -> tuple:
     )
 
 
-def call_llama(prompt: str) -> tuple:
+def call_cerebras(prompt: str) -> tuple:
     response = _get_cerebras_client().chat.completions.create(
-        model="llama3.3-70b",
+        model="gpt-oss-120b",
         max_completion_tokens=2048,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -87,7 +87,7 @@ def call_gpt4o(prompt: str) -> tuple:
 
 
 MODEL_CALLERS = {
-    "claude-haiku-4-5":        call_haiku,
-    "llama-3.3-70b":           call_llama,
-    "gpt-4o":                  call_gpt4o,
+    "claude-haiku-4-5":  call_haiku,
+    "gpt-oss-120b":      call_cerebras,
+    "gpt-4o":            call_gpt4o,
 }

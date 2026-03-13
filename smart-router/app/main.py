@@ -169,8 +169,8 @@ def chat_stream(req: ChatRequest, request: Request):
         try:
             if model == "claude-haiku-4-5":
                 gen = _stream_haiku(prompt, emit=_token_yield)
-            elif model == "llama-3.3-70b":
-                gen = _stream_cerebras(prompt, model="llama3.3-70b", emit=_token_yield)
+            elif model == "gpt-oss-120b":
+                gen = _stream_cerebras(prompt, model="gpt-oss-120b", emit=_token_yield)
             elif model == "gpt-4o":
                 gen = _stream_openai(prompt, emit=_token_yield)
             else:
@@ -216,8 +216,8 @@ def chat_stream(req: ChatRequest, request: Request):
                 try:
                     if final_model == "claude-haiku-4-5":
                         esc_gen = _stream_haiku(prompt, emit=_token_yield)
-                    elif final_model == "llama-3.3-70b":
-                        esc_gen = _stream_cerebras(prompt, model="llama3.3-70b", emit=_token_yield)
+                    elif final_model == "gpt-oss-120b":
+                        esc_gen = _stream_cerebras(prompt, model="gpt-oss-120b", emit=_token_yield)
                     elif final_model == "gpt-4o":
                         esc_gen = _stream_openai(prompt, emit=_token_yield)
                     else:
