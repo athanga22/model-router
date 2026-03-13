@@ -1,4 +1,20 @@
+import re
 from app.database import get_connection
+
+# Patterns for credentials / PII that should never be stored raw
+_REDACT_PATTERNS = [
+    (re.compile(r'\bsk-ant-[A-Za-z0-9\-_]{10,}'), '[ANTHROPIC_KEY]'),
+    (re.compile(r'\bsk-[A-Za-z0-9]{20,}'), '[OPENAI_KEY]'),
+    (re.compile(r'\bcsk-[A-Za-z0-9]{10,}'), '[CEREBRAS_KEY]'),
+]
+
+
+def _redact(text: str) -> str:
+    """Scrub obvious API keys from text before it reaches the database."""
+    for pattern, replacement in _REDACT_PATTERNS:
+        text = pattern.sub(replacement, text)
+    return text
+
 
 def log_request(
     raw_prompt: str,
@@ -20,7 +36,7 @@ def log_request(
                     latency_ms, escalated, cost_saved_usd
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                raw_prompt, difficulty_tag, model_used,
+                _redact(raw_prompt), difficulty_tag, model_used,
                 input_tokens, output_tokens, cost_usd,
                 latency_ms, escalated, cost_saved_usd
             ))

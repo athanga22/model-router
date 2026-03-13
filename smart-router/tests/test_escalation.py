@@ -46,6 +46,15 @@ class TestShouldEscalate:
     def test_pattern_in_middle_of_response(self):
         assert should_escalate("Great question! I don't know the exact answer though.") is True
 
+    def test_no_false_positive_i_cannot_stress(self):
+        assert should_escalate("I cannot stress enough how important this is.") is False
+
+    def test_no_false_positive_i_cannot_emphasize(self):
+        assert should_escalate("I cannot emphasize this enough.") is False
+
+    def test_no_false_positive_i_cannot_overstate(self):
+        assert should_escalate("I cannot overstate the significance of this finding.") is False
+
 
 # ── Escalation Chain ──────────────────────────────────────────────────────────
 

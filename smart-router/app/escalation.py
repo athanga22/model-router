@@ -1,3 +1,4 @@
+import re
 from app.cost import MODEL_FOR_TAG, calculate_cost, calculate_cost_saved
 from app.llm import MODEL_CALLERS
 from typing import Optional, Tuple
@@ -9,28 +10,30 @@ ESCALATION_CHAIN = {
     "complex": None,  # top tier — no escalation possible
 }
 
-# Substring matches — false positives possible (e.g. "I cannot stress enough…").
-# Acceptable for a demo; tighten if escalation_rate is higher than expected.
+# Regex patterns with word boundaries prevent false positives like
+# "I cannot stress enough…" or "unclear to me" appearing mid-word.
+# The negative lookahead on "i cannot" excludes emphasis phrases.
 LOW_CONFIDENCE_PATTERNS = [
-    "i don't know",
-    "i do not know",
-    "i cannot",
-    "i can't",
-    "i am not sure",
-    "i'm not sure",
-    "i am unable",
-    "i'm unable",
-    "not enough information",
-    "insufficient information",
-    "beyond my knowledge",
-    "i lack the",
-    "unclear to me",
+    r"\bi don't know\b",
+    r"\bi do not know\b",
+    r"\bi cannot\b(?!\s+(?:stress|emphasize|overstate))",
+    r"\bi can't\b",
+    r"\bi am not sure\b",
+    r"\bi'm not sure\b",
+    r"\bi am unable\b",
+    r"\bi'm unable\b",
+    r"\bnot enough information\b",
+    r"\binsufficient information\b",
+    r"\bbeyond my knowledge\b",
+    r"\bi lack the\b",
+    r"\bunclear to me\b",
 ]
+
 
 def should_escalate(response_text: str) -> bool:
     """Check if a response contains low-confidence signals."""
     lowered = response_text.lower().strip()
-    return any(pattern in lowered for pattern in LOW_CONFIDENCE_PATTERNS)
+    return any(re.search(pattern, lowered) for pattern in LOW_CONFIDENCE_PATTERNS)
 
 
 def get_next_tier(current_tag: str) -> Optional[Tuple[str, str]]:
