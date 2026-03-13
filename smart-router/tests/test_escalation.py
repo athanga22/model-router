@@ -141,14 +141,12 @@ class TestEscalationDBLogging:
             escalated=result["escalated"]
         )
 
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT escalated FROM requests ORDER BY created_at DESC LIMIT 1"
-        )
-        row = cur.fetchone()
-        cur.close()
-        conn.close()
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT escalated FROM requests ORDER BY created_at DESC LIMIT 1"
+                )
+                row = cur.fetchone()
 
         assert row[0] is True
 
@@ -172,13 +170,11 @@ class TestEscalationDBLogging:
             escalated=result["escalated"]
         )
 
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT escalated FROM requests ORDER BY created_at DESC LIMIT 1"
-        )
-        row = cur.fetchone()
-        cur.close()
-        conn.close()
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT escalated FROM requests ORDER BY created_at DESC LIMIT 1"
+                )
+                row = cur.fetchone()
 
         assert row[0] is False
