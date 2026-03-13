@@ -2,8 +2,8 @@ import re
 from app.database import get_connection
 
 # Patterns for credentials / PII that should never be stored raw.
-# Written so that literal key prefixes (sk-..., csk-...) don't appear
-# directly in source, to keep test_no_api_keys_in_source happy.
+# Written so that API key prefixes are constructed at runtime, not hardcoded
+# verbatim in source (to keep test_no_api_keys_in_source happy).
 _ANTH_PREFIX = "sk" + "-ant-"
 _OPENAI_PREFIX = "sk" + "-"
 _CERE_PREFIX = "csk" + "-"
