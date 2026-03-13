@@ -285,38 +285,8 @@ with tab_chat:
     if "last_exchange" not in st.session_state:
         st.session_state["last_exchange"] = None
 
-    # Render last exchange (persists across reruns)
-    if st.session_state["last_exchange"]:
-        ex = st.session_state["last_exchange"]
-        esc_badge = (
-            ' <span class="badge badge-escalated">↑ escalated</span>'
-            if ex["escalated"]
-            else ""
-        )
-        st.markdown(
-            f'<div class="chat-user">{html.escape(ex["prompt"])}</div>'
-            '<div class="clearfix"></div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<div class="routing-header">'
-            f'<span class="badge badge-{ex["tag"]}">{ex["tag"]}</span>'
-            f"{esc_badge}"
-            f'  →  <strong>{ex["model"]}</strong>'
-            f'</div><div class="clearfix"></div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<div class="chat-assistant">{html.escape(ex["response"])}</div>'
-            '<div class="clearfix"></div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<div class="chat-meta">'
-            f'${ex["cost"]:.6f} &nbsp;·&nbsp; ${ex["saved"]:.6f} saved &nbsp;·&nbsp; {ex["latency"]} ms'
-            f'</div><div class="clearfix"></div>',
-            unsafe_allow_html=True,
-        )
+    # Single exchange area — always renders above the chat input
+    exchange_area = st.container()
 
     user_input = st.chat_input("Ask anything — simple, medium, or complex…")
 
@@ -324,9 +294,15 @@ with tab_chat:
     if user_input:
         prompt = user_input.strip()
 
-        routing_ph  = st.empty()
-        response_ph = st.empty()
-        meta_ph     = st.empty()
+        with exchange_area:
+            st.markdown(
+                f'<div class="chat-user">{html.escape(prompt)}</div>'
+                '<div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
+            routing_ph  = st.empty()
+            response_ph = st.empty()
+            meta_ph     = st.empty()
 
         routing_ph.markdown(
             '<div class="routing-header">Classifying…</div>'
@@ -337,6 +313,9 @@ with tab_chat:
         accumulated = ""
         metadata    = {}
         error_msg   = None
+        final_tag = final_model = ""
+        escalated = False
+        cost = saved = latency = 0
 
         try:
             for frame in stream_chat(prompt):
@@ -381,7 +360,6 @@ with tab_chat:
                         f'</div><div class="clearfix"></div>',
                         unsafe_allow_html=True,
                     )
-                    # Remove streaming cursor
                     response_ph.markdown(
                         f'<div class="chat-assistant">{html.escape(accumulated)}</div>'
                         '<div class="clearfix"></div>',
@@ -404,15 +382,48 @@ with tab_chat:
             error_msg = str(e)
 
         if error_msg:
-            routing_ph.error(f"{error_msg}")
+            routing_ph.error(error_msg)
         else:
             st.session_state["last_exchange"] = {
-                "prompt":   prompt,
-                "response": accumulated,
-                "tag":      final_tag,
-                "model":    final_model,
+                "prompt":    prompt,
+                "response":  accumulated,
+                "tag":       final_tag,
+                "model":     final_model,
                 "escalated": escalated,
-                "cost":     cost,
-                "saved":    saved,
-                "latency":  latency,
+                "cost":      cost,
+                "saved":     saved,
+                "latency":   latency,
             }
+
+    # ── Show last exchange on reruns (no active input) ─────────────────
+    elif st.session_state["last_exchange"]:
+        ex = st.session_state["last_exchange"]
+        esc_badge = (
+            ' <span class="badge badge-escalated">↑ escalated</span>'
+            if ex["escalated"] else ""
+        )
+        with exchange_area:
+            st.markdown(
+                f'<div class="chat-user">{html.escape(ex["prompt"])}</div>'
+                '<div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div class="routing-header">'
+                f'<span class="badge badge-{ex["tag"]}">{ex["tag"]}</span>'
+                f'{esc_badge}'
+                f'  →  <strong>{ex["model"]}</strong>'
+                f'</div><div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div class="chat-assistant">{html.escape(ex["response"])}</div>'
+                '<div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div class="chat-meta">'
+                f'${ex["cost"]:.6f} &nbsp;·&nbsp; ${ex["saved"]:.6f} saved &nbsp;·&nbsp; {ex["latency"]} ms'
+                f'</div><div class="clearfix"></div>',
+                unsafe_allow_html=True,
+            )
