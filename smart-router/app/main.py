@@ -335,7 +335,7 @@ def _stream_haiku(prompt: str, emit):
 
 
 def _stream_cerebras(prompt: str, model: str, emit):
-    """Stream llama-3.3-70b via Cerebras SDK."""
+    """Stream gpt-oss-120b via Cerebras SDK."""
     from app.llm import _get_cerebras_client  # reuse lazy singleton
     client = _get_cerebras_client()
 
