@@ -1,11 +1,11 @@
 """Data models."""
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
 from datetime import datetime
 
+
 class ChatRequest(BaseModel):
-    prompt: str
-    user_id: Optional[str] = None
+    prompt: str = Field(..., min_length=1, max_length=8000)
+
 
 class ChatResponse(BaseModel):
     response: str
