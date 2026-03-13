@@ -1,9 +1,6 @@
 # Local eval scripts, dashboard, and optional ML tooling — not installed in Docker.
 -r requirements.txt
 
-# Tests
-pytest==8.3.3
-
 # Dashboard
 streamlit==1.39.0
 pandas==2.2.3
