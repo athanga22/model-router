@@ -358,7 +358,7 @@ with tab_chat:
                 elif ftype == "token":
                     accumulated += frame.get("text", "")
                     response_ph.markdown(
-                        f'<div class="chat-assistant">{accumulated}▌</div>'
+                        f'<div class="chat-assistant">{html.escape(accumulated)}▌</div>'
                         '<div class="clearfix"></div>',
                         unsafe_allow_html=True,
                     )
@@ -383,7 +383,7 @@ with tab_chat:
                     )
                     # Remove streaming cursor
                     response_ph.markdown(
-                        f'<div class="chat-assistant">{accumulated}</div>'
+                        f'<div class="chat-assistant">{html.escape(accumulated)}</div>'
                         '<div class="clearfix"></div>',
                         unsafe_allow_html=True,
                     )
