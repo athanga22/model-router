@@ -39,6 +39,7 @@ def get_pool() -> ConnectionPool:
             conninfo=_build_conninfo(),
             min_size=1,
             max_size=10,
+            kwargs={"connect_timeout": 5},
         )
     return _pool
 
