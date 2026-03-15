@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CLASSIFIER_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+CLASSIFIER_MODEL = "google/gemma-3n-E4B-it"
 VALID_TAGS = {"simple", "medium", "complex"}
 
 _client = None
@@ -133,7 +133,7 @@ OUTPUT FORMAT
 
 def classify_prompt(prompt: str) -> str:
     """
-    Classify a prompt's difficulty using Llama 3.1 8B via Together AI.
+    Classify a prompt's difficulty using Gemma 3N E4B via Together AI.
     Returns exactly one of: 'simple', 'medium', 'complex'
     """
 
