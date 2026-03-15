@@ -7,11 +7,11 @@ from app.database import get_connection
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def make_callers(haiku_response, cerebras_response=None, gpt4o_response=None):
+def make_callers(haiku_response, together_response=None, gpt4o_response=None):
     return {
-        "claude-haiku-4-5":  lambda p: haiku_response,
-        "gpt-oss-120b":      lambda p: cerebras_response or ("Cerebras answer.", 80, 200),
-        "gpt-4o":            lambda p: gpt4o_response or ("GPT-4o answer.", 100, 300),
+        "claude-haiku-4-5":                        lambda p: haiku_response,
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo": lambda p: together_response or ("Together answer.", 80, 200),
+        "gpt-4o":                                  lambda p: gpt4o_response or ("GPT-4o answer.", 100, 300),
     }
 
 
@@ -63,20 +63,20 @@ class TestEscalationChain:
     def test_simple_escalates_to_medium_on_low_confidence(self):
         callers = make_callers(
             haiku_response=("I don't know the answer.", 50, 10),
-            cerebras_response=("Here is a detailed answer.", 80, 200),
+            together_response=("Here is a detailed answer.", 80, 200),
         )
         with patch("app.escalation.MODEL_CALLERS", callers):
             result = run_with_escalation("Explain quantum entanglement.", initial_tag="simple")
 
         assert result["escalated"] is True
-        assert result["model_used"] == "gpt-oss-120b"
+        assert result["model_used"] == "meta-llama/Llama-3.3-70B-Instruct-Turbo"
         assert result["difficulty_tag"] == "medium"
 
     def test_medium_escalates_to_complex_on_low_confidence(self):
         callers = {
-            "claude-haiku-4-5":  lambda p: ("Haiku answer.", 50, 10),
-            "gpt-oss-120b":      lambda p: ("I'm not sure about this.", 80, 20),
-            "gpt-4o":            lambda p: ("Here is a comprehensive answer.", 100, 400),
+            "claude-haiku-4-5":                        lambda p: ("Haiku answer.", 50, 10),
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo": lambda p: ("I'm not sure about this.", 80, 20),
+            "gpt-4o":                                  lambda p: ("Here is a comprehensive answer.", 100, 400),
         }
         with patch("app.escalation.MODEL_CALLERS", callers):
             result = run_with_escalation("Design a distributed system.", initial_tag="medium")
@@ -123,7 +123,7 @@ class TestEscalationDBLogging:
     def test_escalated_flag_writes_true_to_db(self):
         callers = make_callers(
             haiku_response=("I don't know.", 20, 5),
-            cerebras_response=("Here is a full answer.", 80, 200),
+            together_response=("Here is a full answer.", 80, 200),
         )
         with patch("app.escalation.MODEL_CALLERS", callers):
             result = run_with_escalation("Test escalation DB write.", initial_tag="simple")

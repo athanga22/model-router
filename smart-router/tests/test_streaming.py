@@ -17,7 +17,7 @@ def _parse_frames(response_text: str) -> list[dict]:
 
 def _make_stream(tokens: list[str], input_tokens: int = 10, output_tokens: int = 20):
     """
-    Return a generator function that mimics _stream_haiku / _stream_cerebras /
+    Return a generator function that mimics _stream_haiku / _stream_together /
     _stream_openai.  Accepts *args/**kwargs so it works for all three signatures.
     """
     def _gen(*args, **kwargs):
@@ -116,15 +116,15 @@ class TestStreamEscalation:
 
     def test_escalation_sets_metadata_escalated_true(self):
         haiku = _make_stream(["I don't know the answer."])
-        cerebras = _make_stream(["Paris is the capital of France."])
+        together = _make_stream(["Paris is the capital of France."])
         with patch("app.main.classify_prompt", return_value="simple"), \
              patch("app.main._stream_haiku", haiku), \
-             patch("app.main._stream_cerebras", cerebras), \
+             patch("app.main._stream_together", together), \
              patch("app.main.log_request"):
             resp = _post("What is the capital of France?")
         meta = _parse_frames(resp.text)[0]
         assert meta["escalated"] is True
-        assert meta["model_used"] == "gpt-oss-120b"
+        assert meta["model_used"] == "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
     def test_no_escalation_on_confident_response(self):
         with patch("app.main.classify_prompt", return_value="simple"), \
@@ -137,10 +137,10 @@ class TestStreamEscalation:
 
     def test_escalated_tokens_come_from_escalated_model(self):
         haiku = _make_stream(["I don't know."])
-        cerebras = _make_stream(["Escalated", " answer"])
+        together = _make_stream(["Escalated", " answer"])
         with patch("app.main.classify_prompt", return_value="simple"), \
              patch("app.main._stream_haiku", haiku), \
-             patch("app.main._stream_cerebras", cerebras), \
+             patch("app.main._stream_together", together), \
              patch("app.main.log_request"):
             resp = _post("hard question")
         token_frames = [f for f in _parse_frames(resp.text) if f["type"] == "token"]

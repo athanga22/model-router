@@ -3,7 +3,7 @@ import time
 import logging
 import anthropic
 import openai
-from cerebras.cloud.sdk import Cerebras
+from together import Together
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 _anthropic_client = None
 _openai_client = None
-_cerebras_client = None
+_together_client = None
 
 # Configurable via env var; 60s covers slow streaming cold starts
 _LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
@@ -45,16 +45,16 @@ def _get_openai_client():
     return _openai_client
 
 
-def _get_cerebras_client():
-    global _cerebras_client
-    if _cerebras_client is None:
-        key = os.getenv("CEREBRAS_API_KEY")
+def _get_together_client():
+    global _together_client
+    if _together_client is None:
+        key = os.getenv("TOGETHER_API_KEY")
         if not key:
             raise ValueError(
-                "CEREBRAS_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
+                "TOGETHER_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
             )
-        _cerebras_client = Cerebras(api_key=key, timeout=_LLM_TIMEOUT)
-    return _cerebras_client
+        _together_client = Together(api_key=key, timeout=_LLM_TIMEOUT)
+    return _together_client
 
 
 def _with_retry(fn, label: str):
@@ -96,11 +96,11 @@ def call_haiku(prompt: str) -> tuple:
     return _with_retry(_call, "haiku")
 
 
-def call_cerebras(prompt: str) -> tuple:
+def call_together(prompt: str) -> tuple:
     def _call():
-        response = _get_cerebras_client().chat.completions.create(
-            model="gpt-oss-120b",
-            max_completion_tokens=2048,
+        response = _get_together_client().chat.completions.create(
+            model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
+            max_tokens=2048,
             messages=[{"role": "user", "content": prompt}]
         )
         return (
@@ -108,7 +108,7 @@ def call_cerebras(prompt: str) -> tuple:
             response.usage.prompt_tokens,
             response.usage.completion_tokens
         )
-    return _with_retry(_call, "cerebras")
+    return _with_retry(_call, "together")
 
 
 def call_gpt4o(prompt: str) -> tuple:
@@ -127,7 +127,7 @@ def call_gpt4o(prompt: str) -> tuple:
 
 
 MODEL_CALLERS = {
-    "claude-haiku-4-5":  call_haiku,
-    "gpt-oss-120b":      call_cerebras,
-    "gpt-4o":            call_gpt4o,
+    "claude-haiku-4-5":                      call_haiku,
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo": call_together,
+    "gpt-4o":                                call_gpt4o,
 }
