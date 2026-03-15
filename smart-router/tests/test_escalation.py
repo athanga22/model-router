@@ -70,6 +70,23 @@ class TestShouldEscalate:
     def test_triggers_on_i_cant_provide(self):
         assert should_escalate("I can't provide that information.") is True
 
+    # Knowledge-cutoff / data-access hedges
+    def test_triggers_on_dont_have_access(self):
+        # exact phrase seen in production (Liechtenstein GDP screenshot)
+        assert should_escalate("I don't have access to 2025 GDP data for Liechtenstein.") is True
+
+    def test_triggers_on_knowledge_cutoff(self):
+        assert should_escalate("My knowledge cutoff is early 2024, so I can't confirm this.") is True
+
+    def test_triggers_on_training_data(self):
+        assert should_escalate("My training data doesn't include events after 2023.") is True
+
+    def test_triggers_on_as_of_my_knowledge(self):
+        assert should_escalate("As of my knowledge cutoff, I cannot verify this.") is True
+
+    def test_triggers_on_no_realtime_access(self):
+        assert should_escalate("I don't have real-time data to answer this accurately.") is True
+
 
 # ── Escalation Chain ──────────────────────────────────────────────────────────
 

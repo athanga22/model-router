@@ -165,6 +165,11 @@ def classify_prompt(prompt: str) -> str:
             if valid in tag:
                 return valid
 
+        import logging
+        logging.getLogger(__name__).warning(
+            "Classifier returned unexpected tag %r for prompt (first 80 chars): %r — defaulting to 'medium'",
+            raw, prompt[:80],
+        )
         return "medium"
 
     except Exception as e:
