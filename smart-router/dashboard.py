@@ -401,6 +401,7 @@ with tab_chat:
                 "request_id": request_id,
             }
             st.session_state["feedback_sent"] = False
+            st.rerun()
 
     # ── Show last exchange on reruns (no active input) ─────────────────
     elif st.session_state["last_exchange"]:
