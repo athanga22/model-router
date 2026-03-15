@@ -166,7 +166,7 @@ class TestStreamErrors:
             resp = _post("anything")
         frames = _parse_frames(resp.text)
         assert frames[0]["type"] == "error"
-        assert "classifier_error" in frames[0]["message"]
+        assert "Classification failed" in frames[0]["message"]
 
     def test_error_frame_on_stream_failure(self):
         def _failing(*args, **kwargs):
