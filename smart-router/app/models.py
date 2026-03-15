@@ -38,3 +38,8 @@ class RecentRequest(BaseModel):
     cost_saved_usd: float
     latency_ms: int
     escalated: bool
+
+
+class FeedbackRequest(BaseModel):
+    request_id: int
+    feedback: int  # 1 = thumbs up, -1 = thumbs down

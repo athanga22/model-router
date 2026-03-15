@@ -13,7 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from app.models import ChatRequest, ChatResponse, HealthResponse, StatsResponse, RecentRequest
+from app.models import ChatRequest, ChatResponse, HealthResponse, StatsResponse, RecentRequest, FeedbackRequest
 from app.router import route_prompt
 from app.classifier import classify_prompt
 from app.logger import log_request
@@ -309,21 +309,10 @@ def chat_stream(req: ChatRequest, request: Request):
         cost_usd = calculate_cost(final_model, input_tokens, output_tokens)
         cost_saved_usd = calculate_cost_saved(final_model, input_tokens, output_tokens)
 
-        yield json.dumps({
-            "type": "done",
-            "model_used": final_model,
-            "difficulty_tag": final_tag,
-            "escalated": escalated,
-            "cost_usd": cost_usd,
-            "cost_saved_usd": cost_saved_usd,
-            "latency_ms": latency_ms,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-        }) + "\n"
-
-        # 5. Log (non-fatal)
+        # 5. Log (non-fatal) — capture request_id for feedback
+        request_id = None
         try:
-            log_request(
+            request_id = log_request(
                 raw_prompt=prompt,
                 difficulty_tag=final_tag,
                 model_used=final_model,
@@ -336,6 +325,19 @@ def chat_stream(req: ChatRequest, request: Request):
             )
         except Exception as log_exc:
             _logger.warning("stream request logging failed: %s", log_exc)
+
+        yield json.dumps({
+            "type": "done",
+            "model_used": final_model,
+            "difficulty_tag": final_tag,
+            "escalated": escalated,
+            "cost_usd": cost_usd,
+            "cost_saved_usd": cost_saved_usd,
+            "latency_ms": latency_ms,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "request_id": request_id,
+        }) + "\n"
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
 
@@ -511,6 +513,30 @@ def recent_requests(limit: int = 20):
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────
+# Feedback
+# ─────────────────────────────────────────────
+
+@app.post("/v1/feedback", dependencies=[Depends(_require_api_key)])
+def feedback(req: FeedbackRequest):
+    if req.feedback not in (1, -1):
+        raise HTTPException(status_code=400, detail="feedback must be 1 or -1")
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE requests SET feedback = %s WHERE id = %s",
+                    (req.feedback, req.request_id),
+                )
+                if cur.rowcount == 0:
+                    raise HTTPException(status_code=404, detail="request_id not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return {"ok": True}
 
 
 # ─────────────────────────────────────────────
