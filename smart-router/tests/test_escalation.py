@@ -118,6 +118,7 @@ class TestEscalationChain:
 
 # ── DB Verification ───────────────────────────────────────────────────────────
 
+@pytest.mark.integration
 class TestEscalationDBLogging:
 
     def test_escalated_flag_writes_true_to_db(self):

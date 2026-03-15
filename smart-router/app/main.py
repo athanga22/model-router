@@ -312,7 +312,7 @@ def chat_stream(req: ChatRequest, request: Request):
         # 5. Log (non-fatal) — capture request_id for feedback
         request_id = None
         try:
-            request_id = log_request(
+            result = log_request(
                 raw_prompt=prompt,
                 difficulty_tag=final_tag,
                 model_used=final_model,
@@ -323,6 +323,7 @@ def chat_stream(req: ChatRequest, request: Request):
                 escalated=escalated,
                 cost_saved_usd=cost_saved_usd,
             )
+            request_id = int(result) if isinstance(result, int) else None
         except Exception as log_exc:
             _logger.warning("stream request logging failed: %s", log_exc)
 
