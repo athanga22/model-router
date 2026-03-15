@@ -39,7 +39,7 @@ jobs:
       DATABASE_URL: postgresql://router_user:testpassword@localhost:5432/smart_router
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -100,7 +100,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --add-cloudsql-instances=project-router-488807:us-central1:smart-router-db \
-            --set-secrets="ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,CEREBRAS_API_KEY=CEREBRAS_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,API_KEY=API_KEY:latest" \
+            --set-secrets="ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,TOGETHER_API_KEY=TOGETHER_API_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest,API_KEY=API_KEY:latest" \
             --set-env-vars="POSTGRES_USER=router_user,POSTGRES_DB=smart_router,POSTGRES_HOST=/cloudsql/project-router-488807:us-central1:smart-router-db" \
             --memory=512Mi \
             --cpu=1 \

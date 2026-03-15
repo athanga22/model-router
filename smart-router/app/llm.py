@@ -53,7 +53,7 @@ def _get_together_client():
             raise ValueError(
                 "TOGETHER_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
             )
-        _together_client = Together(api_key=key)
+        _together_client = Together(api_key=key, timeout=_LLM_TIMEOUT)
     return _together_client
 
 

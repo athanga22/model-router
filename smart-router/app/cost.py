@@ -1,5 +1,3 @@
-from typing import Tuple
-
 RATES = {
     "claude-haiku-4-5":                        (0.001,   0.005),
     # Together AI Llama-3.3-70B-Instruct-Turbo: $0.88/M input+output (per-1000-token rates)
