@@ -47,7 +47,7 @@ def _require_api_key(key: str | None = Security(_API_KEY_HEADER)):
 @app.on_event("startup")
 async def _startup():
     """Validate configuration and log startup status."""
-    missing_keys = [v for v in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "CEREBRAS_API_KEY") if not os.getenv(v)]
+    missing_keys = [v for v in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "TOGETHER_API_KEY") if not os.getenv(v)]
     if missing_keys:
         _logger.error("Missing required API keys: %s — requests will fail until set", missing_keys)
 
@@ -198,8 +198,8 @@ def chat_stream(req: ChatRequest, request: Request):
         try:
             if model == "claude-haiku-4-5":
                 gen = _stream_haiku(prompt, emit=_token_yield)
-            elif model == "gpt-oss-120b":
-                gen = _stream_cerebras(prompt, model="gpt-oss-120b", emit=_token_yield)
+            elif model == "meta-llama/Llama-3.3-70B-Instruct-Turbo":
+                gen = _stream_together(prompt, model="meta-llama/Llama-3.3-70B-Instruct-Turbo", emit=_token_yield)
             elif model == "gpt-4o":
                 gen = _stream_openai(prompt, emit=_token_yield)
             else:
@@ -245,8 +245,8 @@ def chat_stream(req: ChatRequest, request: Request):
                 try:
                     if final_model == "claude-haiku-4-5":
                         esc_gen = _stream_haiku(prompt, emit=_token_yield)
-                    elif final_model == "gpt-oss-120b":
-                        esc_gen = _stream_cerebras(prompt, model="gpt-oss-120b", emit=_token_yield)
+                    elif final_model == "meta-llama/Llama-3.3-70B-Instruct-Turbo":
+                        esc_gen = _stream_together(prompt, model="meta-llama/Llama-3.3-70B-Instruct-Turbo", emit=_token_yield)
                     elif final_model == "gpt-4o":
                         esc_gen = _stream_openai(prompt, emit=_token_yield)
                     else:
@@ -363,10 +363,10 @@ def _stream_haiku(prompt: str, emit):
     return full_text, input_tokens, output_tokens
 
 
-def _stream_cerebras(prompt: str, model: str, emit):
-    """Stream gpt-oss-120b via Cerebras SDK."""
-    from app.llm import _get_cerebras_client  # reuse lazy singleton
-    client = _get_cerebras_client()
+def _stream_together(prompt: str, model: str, emit):
+    """Stream via Together AI SDK."""
+    from app.llm import _get_together_client  # reuse lazy singleton
+    client = _get_together_client()
 
     full_text = ""
     input_tokens = 0
@@ -374,7 +374,7 @@ def _stream_cerebras(prompt: str, model: str, emit):
 
     stream = client.chat.completions.create(
         model=model,
-        max_completion_tokens=2048,
+        max_tokens=2048,
         messages=[{"role": "user", "content": prompt}],
         stream=True,
     )

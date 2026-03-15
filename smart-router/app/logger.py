@@ -6,12 +6,12 @@ from app.database import get_connection
 # verbatim in source (to keep test_no_api_keys_in_source happy).
 _ANTH_PREFIX = "sk" + "-ant-"
 _OPENAI_PREFIX = "sk" + "-"
-_CERE_PREFIX = "csk" + "-"
+_TOGETHER_PREFIX = "tsk" + "-"
 
 _REDACT_PATTERNS = [
     (re.compile(rf"\b{_ANTH_PREFIX}[A-Za-z0-9\-_]{{10,}}"), "[ANTHROPIC_KEY]"),
     (re.compile(rf"\b{_OPENAI_PREFIX}[A-Za-z0-9]{{20,}}"), "[OPENAI_KEY]"),
-    (re.compile(rf"\b{_CERE_PREFIX}[A-Za-z0-9]{{10,}}"), "[CEREBRAS_KEY]"),
+    (re.compile(rf"\b{_TOGETHER_PREFIX}[A-Za-z0-9]{{10,}}"), "[TOGETHER_KEY]"),
 ]
 
 

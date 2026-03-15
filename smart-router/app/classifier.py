@@ -1,12 +1,12 @@
 """Request classifier for routing decisions."""
 import os
 import time
-from cerebras.cloud.sdk import Cerebras
+from together import Together
 from dotenv import load_dotenv
 
 load_dotenv()
 
-CLASSIFIER_MODEL = "llama3.1-8b"
+CLASSIFIER_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
 VALID_TAGS = {"simple", "medium", "complex"}
 
 _client = None
@@ -15,12 +15,12 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        key = os.getenv("CEREBRAS_API_KEY")
+        key = os.getenv("TOGETHER_API_KEY")
         if not key:
             raise ValueError(
-                "CEREBRAS_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
+                "TOGETHER_API_KEY is required. Set it in the environment or in GitHub Actions secrets."
             )
-        _client = Cerebras(api_key=key)
+        _client = Together(api_key=key)
     return _client
 
 SYSTEM_PROMPT = """
@@ -133,7 +133,7 @@ OUTPUT FORMAT
 
 def classify_prompt(prompt: str) -> str:
     """
-    Classify a prompt's difficulty using Llama 3.1 8B via Cerebras.
+    Classify a prompt's difficulty using Llama 3.1 8B via Together AI.
     Returns exactly one of: 'simple', 'medium', 'complex'
     """
 
@@ -152,7 +152,7 @@ def classify_prompt(prompt: str) -> str:
                 {"role": "user", "content": f"Classify this prompt:\n\n{classifier_input}"}
             ],
             temperature=0.0,
-            max_completion_tokens=5,
+            max_tokens=5,
         )
 
         raw = response.choices[0].message.content.strip().lower()
