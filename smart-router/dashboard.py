@@ -384,6 +384,8 @@ with tab_chat:
         if error_msg:
             routing_ph.error(error_msg)
         else:
+            load_stats.clear()
+            load_recent.clear()
             st.session_state["last_exchange"] = {
                 "prompt":    prompt,
                 "response":  accumulated,
