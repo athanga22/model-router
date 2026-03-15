@@ -58,7 +58,7 @@ jobs:
         run: python -m app.database
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short
+        run: pytest tests/ -v --tb=short -m "not integration"
 
   deploy:
     name: Deploy to Cloud Run

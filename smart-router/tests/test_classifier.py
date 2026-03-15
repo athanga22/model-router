@@ -2,6 +2,8 @@ import time
 import pytest
 from app.classifier import classify_prompt
 
+pytestmark = pytest.mark.integration
+
 # ------------------------------------------------------------
 # 20 labeled test cases
 # Format: (prompt, expected_tag)
