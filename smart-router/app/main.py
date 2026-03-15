@@ -57,6 +57,15 @@ async def _startup():
     if not os.getenv("DASHBOARD_URL"):
         _logger.warning("DASHBOARD_URL not set — CORS using hardcoded default origin")
 
+    # Pre-initialise the Together client so the first real request doesn't pay
+    # the lazy-init penalty on top of the network round-trip.
+    try:
+        from app.classifier import _get_client as _get_classifier_client
+        _get_classifier_client()
+        _logger.info("Together client initialised")
+    except Exception as e:
+        _logger.warning("Could not pre-init Together client: %s", e)
+
     _logger.info(
         "Smart Router started | auth=%s | dashboard_origin=%s",
         "enabled" if os.getenv("API_KEY") else "disabled",
