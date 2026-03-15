@@ -115,6 +115,8 @@ class TestMetadataFields:
 class TestStreamEscalation:
 
     def test_escalation_sets_metadata_escalated_true(self):
+        # Two metadata frames are now emitted: the initial one (escalated=False)
+        # immediately after classification, then the escalation one (escalated=True).
         haiku = _make_stream(["I don't know the answer."])
         together = _make_stream(["Paris is the capital of France."])
         with patch("app.main.classify_prompt", return_value="simple"), \
@@ -122,9 +124,14 @@ class TestStreamEscalation:
              patch("app.main._stream_together", together), \
              patch("app.main.log_request"):
             resp = _post("What is the capital of France?")
-        meta = _parse_frames(resp.text)[0]
-        assert meta["escalated"] is True
-        assert meta["model_used"] == "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+        frames = _parse_frames(resp.text)
+        meta_frames = [f for f in frames if f["type"] == "metadata"]
+        # First metadata: initial routing decision (simple, haiku)
+        assert meta_frames[0]["escalated"] is False
+        assert meta_frames[0]["model_used"] == "claude-haiku-4-5"
+        # Second metadata: escalation override
+        assert meta_frames[1]["escalated"] is True
+        assert meta_frames[1]["model_used"] == "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
     def test_no_escalation_on_confident_response(self):
         with patch("app.main.classify_prompt", return_value="simple"), \
@@ -169,6 +176,8 @@ class TestStreamErrors:
         assert "Classification failed" in frames[0]["message"]
 
     def test_error_frame_on_stream_failure(self):
+        # Classification succeeds so an initial metadata frame is emitted first,
+        # then the LLM call fails and an error frame follows.
         def _failing(*args, **kwargs):
             raise Exception("provider_down")
             yield  # pragma: no cover — makes this a generator function
@@ -177,7 +186,9 @@ class TestStreamErrors:
              patch("app.main._stream_haiku", _failing):
             resp = _post("anything")
         frames = _parse_frames(resp.text)
-        assert frames[0]["type"] == "error"
+        error_frames = [f for f in frames if f["type"] == "error"]
+        assert len(error_frames) == 1
+        assert "Model call failed" in error_frames[0]["message"]
 
     def test_response_status_200_even_on_stream_error(self):
         """HTTP 200 is correct — errors are signalled in-stream, not via status."""

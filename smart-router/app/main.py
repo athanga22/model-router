@@ -199,6 +199,16 @@ def chat_stream(req: ChatRequest, request: Request):
 
         model = MODEL_FOR_TAG[tag]
 
+        # 1b. Emit initial routing decision immediately so the user sees it
+        #     while the first-tier model is buffering. A second metadata frame
+        #     will override this if escalation fires.
+        yield json.dumps({
+            "type":           "metadata",
+            "difficulty_tag": tag,
+            "model_used":     model,
+            "escalated":      False,
+        }) + "\n"
+
         # 2. Buffer first-tier response — needed to check for escalation
         buffered_tokens = []
         full_text = ""
@@ -283,23 +293,13 @@ def chat_stream(req: ChatRequest, request: Request):
                     return
             else:
                 # Already at top tier — flush buffer as-is
-                yield json.dumps({
-                    "type": "metadata",
-                    "difficulty_tag": tag,
-                    "model_used": model,
-                    "escalated": False,
-                }) + "\n"
+                # (initial metadata frame already sent above)
                 for line in buffered_tokens:
                     yield line
                     time.sleep(0.015)
         else:
             # No escalation — flush buffer
-            yield json.dumps({
-                "type": "metadata",
-                "difficulty_tag": tag,
-                "model_used": model,
-                "escalated": False,
-            }) + "\n"
+            # (initial metadata frame already sent above)
             for line in buffered_tokens:
                 yield line
                 time.sleep(0.015)
