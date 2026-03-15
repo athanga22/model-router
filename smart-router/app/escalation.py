@@ -1,7 +1,10 @@
 import re
+import logging
 from app.cost import MODEL_FOR_TAG, calculate_cost, calculate_cost_saved
 from app.llm import MODEL_CALLERS
 from typing import Optional, Tuple
+
+_logger = logging.getLogger(__name__)
 
 # Tier chain — defines escalation order
 ESCALATION_CHAIN = {
@@ -17,7 +20,7 @@ LOW_CONFIDENCE_PATTERNS = [
     r"\bi don't know\b",
     r"\bi do not know\b",
     r"\bi cannot\b(?!\s+(?:stress|emphasize|overstate))",
-    r"\bi can't\b",
+    r"\bi can't\b(?!\s+(?:stress|emphasize|overstate|wait|believe|imagine))",
     r"\bi am not sure\b",
     r"\bi'm not sure\b",
     r"\bi am unable\b",
@@ -58,6 +61,7 @@ def run_with_escalation(prompt: str, initial_tag: str) -> dict:
         response_text, input_tokens, output_tokens = caller(prompt)
     except Exception as e:
         # Model call failed — treat as escalation trigger
+        _logger.warning("Initial model call failed for tag=%s model=%s: %s", initial_tag, model, e)
         response_text = None
         input_tokens, output_tokens = 0, 0
 
