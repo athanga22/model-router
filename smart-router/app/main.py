@@ -184,7 +184,8 @@ def chat_stream(req: ChatRequest, request: Request):
         try:
             tag = classify_prompt(prompt)
         except Exception as e:
-            yield json.dumps({"type": "error", "message": f"classifier_error: {e}"}) + "\n"
+            _logger.error("classify_prompt failed: %s", e, exc_info=True)
+            yield json.dumps({"type": "error", "message": "Classification failed — please try again."}) + "\n"
             return
 
         model = MODEL_FOR_TAG[tag]
@@ -218,7 +219,8 @@ def chat_stream(req: ChatRequest, request: Request):
                     full_text, input_tokens, output_tokens = stop.value
 
         except Exception as e:
-            yield json.dumps({"type": "error", "message": str(e)}) + "\n"
+            _logger.error("LLM call failed: %s", e, exc_info=True)
+            yield json.dumps({"type": "error", "message": "Model call failed — please try again."}) + "\n"
             return
 
         # 3. Escalation check
@@ -267,7 +269,8 @@ def chat_stream(req: ChatRequest, request: Request):
                             full_text, input_tokens, output_tokens = stop.value
 
                 except Exception as e:
-                    yield json.dumps({"type": "error", "message": f"escalation_failed: {e}"}) + "\n"
+                    _logger.error("Escalation failed: %s", e, exc_info=True)
+                    yield json.dumps({"type": "error", "message": "Escalation failed — please try again."}) + "\n"
                     return
             else:
                 # Already at top tier — flush buffer as-is
