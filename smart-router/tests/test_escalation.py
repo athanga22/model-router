@@ -55,6 +55,21 @@ class TestShouldEscalate:
     def test_no_false_positive_i_cannot_overstate(self):
         assert should_escalate("I cannot overstate the significance of this finding.") is False
 
+    def test_no_false_positive_i_cant_wait(self):
+        assert should_escalate("I can't wait to show you this solution!") is False
+
+    def test_no_false_positive_i_cant_believe(self):
+        assert should_escalate("I can't believe how elegant this approach is.") is False
+
+    def test_no_false_positive_i_cant_stress(self):
+        assert should_escalate("I can't stress enough how important this is.") is False
+
+    def test_triggers_on_i_cant_answer(self):
+        assert should_escalate("I can't answer that question.") is True
+
+    def test_triggers_on_i_cant_provide(self):
+        assert should_escalate("I can't provide that information.") is True
+
 
 # ── Escalation Chain ──────────────────────────────────────────────────────────
 
