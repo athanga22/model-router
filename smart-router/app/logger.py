@@ -6,7 +6,7 @@ from app.database import get_connection
 # verbatim in source (to keep test_no_api_keys_in_source happy).
 _ANTH_PREFIX = "sk" + "-ant-"
 _OPENAI_PREFIX = "sk" + "-"
-_TOGETHER_PREFIX = "tsk" + "-"
+_TOGETHER_PREFIX = "key" + "-"
 
 _REDACT_PATTERNS = [
     (re.compile(rf"\b{_ANTH_PREFIX}[A-Za-z0-9\-_]{{10,}}"), "[ANTHROPIC_KEY]"),
