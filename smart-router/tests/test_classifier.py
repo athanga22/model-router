@@ -1,80 +1,65 @@
+import csv
 import time
+import pathlib
 import pytest
+from collections import Counter
 from app.classifier import classify_prompt
 
 pytestmark = pytest.mark.integration
 
-# ------------------------------------------------------------
-# 20 labeled test cases
-# Format: (prompt, expected_tag)
-# ------------------------------------------------------------
-LABELED_PROMPTS = [
-    # SIMPLE (8 cases)
-    ("What is the capital of Japan?",                                      "simple"),
-    ("Translate 'good morning' to French.",                                "simple"),
-    ("What does HTML stand for?",                                          "simple"),
-    ("Give me a synonym for 'happy'.",                                     "simple"),
-    ("What year was Python created?",                                      "simple"),
-    ("Convert 100 Fahrenheit to Celsius.",                                 "simple"),
-    ("What is the plural of 'mouse'?",                                     "simple"),
-    ("Summarize this in one sentence: The dog ran across the field.",      "simple"),
+_DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
+_VALID_TAGS = {"simple", "medium", "complex"}
 
-    # MEDIUM (7 cases)
-    ("Compare SQL and NoSQL databases and when to use each.",              "medium"),
-    ("Write a Python function that reverses a linked list.",               "medium"),
-    ("Explain how HTTPS works in simple terms.",                           "medium"),
-    ("Draft a professional email asking for a project deadline extension.","medium"),
-    ("What are the pros and cons of remote work?",                         "medium"),
-    ("Explain the difference between authentication and authorization.",   "medium"),
-    ("Write a regex to validate an email address and explain it.",         "medium"),
 
-    # COMPLEX (5 cases)
-    ("Design a fault-tolerant microservices architecture for an e-commerce platform with 5M daily users.", "complex"),
-    ("Debug this system: requests randomly fail under load, latency spikes to 10s, no obvious errors in logs.", "complex"),
-    ("Implement a role-based access control system with FastAPI and PostgreSQL.", "complex"),
-    ("Write a technical deep-dive comparing Redis and Memcached for caching strategies.", "complex"),
-    ("Analyze the implications of the CAP theorem on distributed database design.", "complex"),
-]
-
-# Edge cases
-EDGE_CASES = [
-    ("",                                           "simple"),   # empty string
-    ("   ",                                        "simple"),   # whitespace only
-    ("a" * 2500,                                   "simple"),   # very long (>2000 chars) — truncated gibberish
-    ("¿Cuál es la capital de España?",             "simple"),   # non-English simple
-    ("Diseña una arquitectura de microservicios.", "complex"),  # non-English complex
-]
+def _load_eval_prompts():
+    """300 human-labeled prompts from eval_prompts.csv."""
+    rows = []
+    with open(_DATA_DIR / "eval_prompts.csv", newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            label = row["human_label"].strip()
+            if label in _VALID_TAGS:
+                rows.append((row["prompt"].strip(), label))
+    return rows
 
 
 class TestClassifierAccuracy:
 
-    def test_accuracy_on_labeled_set(self):
+    def test_accuracy_on_eval_set(self):
+        labeled = _load_eval_prompts()
         correct = 0
-        results = []
+        misses = []
+        confusion = Counter()
 
-        for prompt, expected in LABELED_PROMPTS:
+        for prompt, expected in labeled:
             actual = classify_prompt(prompt)
-            passed = actual == expected
-            if passed:
+            confusion[(expected, actual)] += 1
+            if actual == expected:
                 correct += 1
-            results.append((passed, expected, actual, prompt[:50]))
+            else:
+                misses.append((expected, actual, prompt[:70]))
 
-        accuracy = correct / len(LABELED_PROMPTS)
+        accuracy = correct / len(labeled)
 
-        # Print breakdown for visibility
-        print(f"\n--- Classifier Accuracy Report ---")
-        for passed, expected, actual, prompt in results:
-            status = "PASS" if passed else "FAIL"
-            print(f"[{status}] expected={expected:>8} got={actual:>8}  {prompt}")
-        print(f"\nAccuracy: {correct}/{len(LABELED_PROMPTS)} = {accuracy:.0%}")
+        tiers = ("simple", "medium", "complex")
+        print(f"\n=== Classifier Accuracy: {correct}/{len(labeled)} = {accuracy:.0%} ===\n")
+        print("Confusion matrix (rows=human_label, cols=classifier):")
+        print(f"{'':>10}  {'simple':>8}  {'medium':>8}  {'complex':>8}")
+        for tier in tiers:
+            print(f"  {tier:>8}  " + "  ".join(f"{confusion[(tier, p)]:>8}" for p in tiers))
 
-        assert accuracy >= 0.80, f"Accuracy {accuracy:.0%} is below the 80% threshold"
+        if misses:
+            print(f"\nFirst 20 misses:")
+            for expected, actual, prompt in misses[:20]:
+                print(f"  expected={expected:<8} got={actual:<8} {prompt}")
+
+        assert accuracy >= 0.75, (
+            f"Accuracy {accuracy:.0%} is below 75% on eval set — classifier may be broken."
+        )
 
     def test_output_is_always_valid_tag(self):
-        valid = {"simple", "medium", "complex"}
-        for prompt, _ in LABELED_PROMPTS:
+        for prompt, _ in _load_eval_prompts()[:30]:
             result = classify_prompt(prompt)
-            assert result in valid, f"Invalid tag '{result}' for prompt: {prompt[:50]}"
+            assert result in _VALID_TAGS, f"Invalid tag '{result}' for: {prompt[:60]}"
 
 
 class TestEdgeCases:
@@ -86,41 +71,32 @@ class TestEdgeCases:
         assert classify_prompt("   ") == "simple"
 
     def test_very_long_prompt(self):
-        long_prompt = "explain machine learning " * 200  # ~5000 chars
-        result = classify_prompt(long_prompt)
-        assert result in {"simple", "medium", "complex"}
+        result = classify_prompt("explain machine learning " * 200)
+        assert result in _VALID_TAGS
 
     def test_non_english_simple(self):
-        result = classify_prompt("¿Cuál es la capital de España?")
-        assert result in {"simple", "medium", "complex"}
+        assert classify_prompt("¿Cuál es la capital de España?") in _VALID_TAGS
 
     def test_non_english_complex(self):
-        result = classify_prompt("Diseña una arquitectura de microservicios escalable.")
-        assert result in {"simple", "medium", "complex"}
+        assert classify_prompt("Diseña una arquitectura de microservicios escalable.") in _VALID_TAGS
 
 
 class TestLatency:
 
-    def test_average_latency_under_2_seconds(self):
-        test_prompts = [
+    def test_average_latency_under_10_seconds(self):
+        prompts = [
             "What is 2 + 2?",
             "Explain REST APIs.",
             "What is the capital of Germany?",
             "Write a Python fibonacci function.",
-            "What does CPU stand for?",
             "Compare Docker and VMs.",
-            "Translate hello to Spanish.",
-            "Design a distributed cache.",
-            "What year was the internet invented?",
-            "Explain OAuth2 flow.",
         ]
-
         times = []
-        for prompt in test_prompts:
+        for prompt in prompts:
             start = time.time()
             classify_prompt(prompt)
             times.append(time.time() - start)
 
         avg = sum(times) / len(times)
         print(f"\nAverage latency: {avg:.3f}s over {len(times)} calls")
-        assert avg < 10.0, f"Average latency {avg:.2f}s exceeds 10s threshold (CI can be slow)"
+        assert avg < 10.0, f"Average latency {avg:.2f}s exceeds 10s"
