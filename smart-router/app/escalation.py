@@ -30,6 +30,15 @@ LOW_CONFIDENCE_PATTERNS = [
     r"\bbeyond my knowledge\b",
     r"\bi lack the\b",
     r"\bunclear to me\b",
+    # LLM data-access / knowledge-cutoff hedges
+    r"\bi don't have access\b",
+    r"\bi do not have access\b",
+    r"\bi have no access\b",
+    r"\bmy knowledge cutoff\b",
+    r"\bmy training (data|cutoff)\b",
+    r"\bas of my (knowledge|training)\b",
+    r"\bi don't have (real.?time|current|up.?to.?date)\b",
+    r"\bcannot (access|provide|retrieve) (real.?time|current|live|up.?to.?date)\b",
 ]
 
 
