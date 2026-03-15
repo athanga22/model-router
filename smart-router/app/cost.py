@@ -1,17 +1,17 @@
 from typing import Tuple
 
 RATES = {
-    "claude-haiku-4-5":  (0.001,    0.005),
-    # Cerebras gpt-oss-120b: $0.25/M input, $0.69/M output (per-1000-token rates)
-    "gpt-oss-120b":      (0.00025,  0.00069),
-    "gpt-4o":            (0.0025,   0.010),
+    "claude-haiku-4-5":                        (0.001,   0.005),
+    # Together AI Llama-3.3-70B-Instruct-Turbo: $0.88/M input+output (per-1000-token rates)
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo": (0.00088, 0.00088),
+    "gpt-4o":                                  (0.0025,  0.010),
 }
 
 GPT4O_RATES = (0.0025, 0.010)
 
 MODEL_FOR_TAG = {
     "simple":  "claude-haiku-4-5",
-    "medium":  "gpt-oss-120b",
+    "medium":  "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     "complex": "gpt-4o",
 }
 
