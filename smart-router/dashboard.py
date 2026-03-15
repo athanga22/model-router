@@ -284,6 +284,8 @@ with tab_chat:
 
     if "last_exchange" not in st.session_state:
         st.session_state["last_exchange"] = None
+    if "feedback_sent" not in st.session_state:
+        st.session_state["feedback_sent"] = False
 
     # Single exchange area — always renders above the chat input
     exchange_area = st.container()
@@ -349,6 +351,7 @@ with tab_chat:
                     cost        = frame.get("cost_usd", 0)
                     saved       = frame.get("cost_saved_usd", 0)
                     latency     = frame.get("latency_ms", 0)
+                    request_id  = frame.get("request_id")
 
                     badge_cls = f"badge-{final_tag}" if final_tag in ("simple","medium","complex") else "badge-medium"
                     esc_badge = ' <span class="badge badge-escalated">↑ escalated</span>' if escalated else ""
@@ -387,15 +390,17 @@ with tab_chat:
             load_stats.clear()
             load_recent.clear()
             st.session_state["last_exchange"] = {
-                "prompt":    prompt,
-                "response":  accumulated,
-                "tag":       final_tag,
-                "model":     final_model,
-                "escalated": escalated,
-                "cost":      cost,
-                "saved":     saved,
-                "latency":   latency,
+                "prompt":     prompt,
+                "response":   accumulated,
+                "tag":        final_tag,
+                "model":      final_model,
+                "escalated":  escalated,
+                "cost":       cost,
+                "saved":      saved,
+                "latency":    latency,
+                "request_id": request_id,
             }
+            st.session_state["feedback_sent"] = False
 
     # ── Show last exchange on reruns (no active input) ─────────────────
     elif st.session_state["last_exchange"]:
@@ -429,3 +434,15 @@ with tab_chat:
                 f'</div><div class="clearfix"></div>',
                 unsafe_allow_html=True,
             )
+            if ex.get("request_id") and not st.session_state["feedback_sent"]:
+                col_up, col_down, _ = st.columns([1, 1, 10])
+                if col_up.button("👍", key="fb_up"):
+                    httpx.post(f"{API_BASE_URL}/v1/feedback", json={"request_id": ex["request_id"], "feedback": 1}, headers=HEADERS, timeout=5)
+                    st.session_state["feedback_sent"] = True
+                    st.rerun()
+                if col_down.button("👎", key="fb_down"):
+                    httpx.post(f"{API_BASE_URL}/v1/feedback", json={"request_id": ex["request_id"], "feedback": -1}, headers=HEADERS, timeout=5)
+                    st.session_state["feedback_sent"] = True
+                    st.rerun()
+            elif st.session_state["feedback_sent"]:
+                st.markdown("✅ Thanks for the feedback!")

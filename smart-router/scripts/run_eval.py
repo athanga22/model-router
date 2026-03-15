@@ -89,6 +89,24 @@ def main():
     correct = sum(1 for j in range(len(df)) if _norm(df.iloc[j]["human_label"]) == _norm(df.iloc[j]["classifier_label"]))
     print(f"\nRaw accuracy: {correct}/{len(df)} ({correct/len(df):.1%})", flush=True)
 
+    tiers = ["simple", "medium", "complex"]
+    confusion = {h: {c: 0 for c in tiers} for h in tiers}
+    for _, row in df.iterrows():
+        h = _norm(row["human_label"])
+        c = _norm(row["classifier_label"])
+        if h in tiers and c in tiers:
+            confusion[h][c] += 1
+
+    print("\nConfusion matrix (rows=human_label, cols=classifier):", flush=True)
+    print(f"{'':>10}  {'simple':>8}  {'medium':>8}  {'complex':>8}", flush=True)
+    for tier in tiers:
+        print(f"  {tier:>8}  " + "  ".join(f"{confusion[tier][p]:>8}" for p in tiers), flush=True)
+
+    print("\nMisclassified prompts:", flush=True)
+    misses = df[df["human_label"].map(_norm) != df["classifier_label"].map(_norm)]
+    for _, row in misses.iterrows():
+        print(f"  expected={_norm(row['human_label']):<8} got={_norm(row['classifier_label']):<8} {row['prompt'][:70]}", flush=True)
+
 
 if __name__ == "__main__":
     main()
