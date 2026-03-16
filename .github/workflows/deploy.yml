@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: smart-router
+        working-directory: src
 
     services:
       postgres:
@@ -86,7 +86,7 @@ jobs:
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
       - name: Build and push image
-        working-directory: smart-router
+        working-directory: src
         run: |
           docker build --platform linux/amd64 -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
           docker push $IMAGE:${{ github.sha }}

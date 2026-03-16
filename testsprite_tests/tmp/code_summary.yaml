@@ -1,0 +1,152 @@
+version: "2"
+type: backend
+tech_stack:
+  - language: Python 3.11
+  - framework: FastAPI
+  - database: PostgreSQL (psycopg3 + psycopg_pool)
+  - other: Anthropic SDK, OpenAI SDK, Together AI SDK, SlowAPI rate limiter, python-dotenv
+features:
+  - name: Health Check API
+    description: Returns system health including DB and classifier status
+    files:
+      - app/main.py
+    endpoints:
+      - method: GET
+        path: /v1/health
+        description: Check health of database and classifier service
+        auth_required: false
+        response_schema:
+          "200":
+            status: string
+            db: string
+            classifier: string
+
+  - name: Blocking Chat API
+    description: Routes a user prompt to the appropriate LLM model based on difficulty classification, with optional escalation
+    files:
+      - app/main.py
+      - app/router.py
+      - app/classifier.py
+      - app/escalation.py
+      - app/llm.py
+    endpoints:
+      - method: POST
+        path: /v1/chat
+        description: Send a prompt and receive a full response with model routing metadata
+        auth_required: true
+        request_schema:
+          body:
+            prompt: string (1-8000 chars)
+        response_schema:
+          "200":
+            response: string
+            model_used: string
+            difficulty_tag: string
+            cost_usd: float
+            latency_ms: int
+            escalated: bool
+          "403": invalid_api_key
+          "429": rate limit exceeded
+          "500": internal_error
+
+  - name: Streaming Chat API
+    description: Streams LLM response tokens with metadata frames using newline-delimited JSON (text/event-stream)
+    files:
+      - app/main.py
+    endpoints:
+      - method: POST
+        path: /v1/chat/stream
+        description: Stream LLM response with routing metadata, token events, and final done frame
+        auth_required: true
+        request_schema:
+          body:
+            prompt: string (1-8000 chars)
+        response_schema:
+          "200": text/event-stream with metadata/token/done/error frames
+          "403": invalid_api_key
+          "429": rate limit exceeded
+
+  - name: Stats API
+    description: Returns aggregate statistics about all requests processed
+    files:
+      - app/main.py
+    endpoints:
+      - method: GET
+        path: /v1/stats
+        description: Get total requests, costs, savings, model usage breakdown, escalation rate, and hourly savings time series
+        auth_required: true
+        response_schema:
+          "200":
+            total_requests: int
+            total_cost_usd: float
+            total_cost_saved_usd: float
+            model_usage: object
+            escalation_rate: float
+            savings_ts: array
+
+  - name: Recent Requests API
+    description: Returns the most recent requests for dashboard display
+    files:
+      - app/main.py
+    endpoints:
+      - method: GET
+        path: /v1/recent
+        description: Retrieve N most recent requests ordered by timestamp descending
+        auth_required: true
+        request_schema:
+          query:
+            limit: int (default 20)
+        response_schema:
+          "200": array of RecentRequest objects
+          "500": database error
+
+  - name: Feedback API
+    description: Allows thumbs-up/down feedback on a specific request
+    files:
+      - app/main.py
+    endpoints:
+      - method: POST
+        path: /v1/feedback
+        description: Submit +1 or -1 feedback for a logged request by ID
+        auth_required: true
+        request_schema:
+          body:
+            request_id: int
+            feedback: int (1 or -1)
+        response_schema:
+          "200":
+            ok: true
+          "400": feedback must be 1 or -1
+          "404": request_id not found
+          "500": database error
+
+  - name: Prompt Classifier
+    description: Classifies prompts as simple/medium/complex using Together AI
+    files:
+      - app/classifier.py
+    endpoints: []
+    depends_on:
+      - Together AI SDK
+
+  - name: Escalation Engine
+    description: Detects low-confidence responses via regex and escalates to the next model tier
+    files:
+      - app/escalation.py
+    endpoints: []
+
+  - name: Cost Calculator
+    description: Computes cost and cost savings per request based on model and token counts
+    files:
+      - app/cost.py
+    endpoints: []
+
+known_limitations:
+  - issue: ANTHROPIC_API_KEY is not set, so claude-haiku-4-5 model calls will fail
+    location: app/llm.py
+    impact: Requests routed to simple/haiku tier will error
+  - issue: No retry logic on LLM calls
+    location: app/escalation.py
+    impact: Transient API errors cause immediate 500 responses
+  - issue: Rate limiter uses per-IP; Streamlit Cloud shares one IP
+    location: app/main.py
+    impact: Rate limit may incorrectly throttle legitimate users on shared IPs

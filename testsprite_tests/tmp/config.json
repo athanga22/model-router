@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "smart-router",
+    "projectPath": "/Users/ashishthanga/Desktop/model-router/src",
+    "testIds": [],
+    "additionalInstruction": "All authenticated API requests MUST include the HTTP header \"X-API-Key: 350b6ac402988036f99784fbdb71c040527801dd021f88f04cef0dd03425335e\".\n\nCover the following backend scenarios as thoroughly as possible:\n1. GET /v1/health - verify status, db, and classifier fields\n2. POST /v1/chat - with valid prompt, check response, model_used, difficulty_tag, cost_usd, latency_ms, escalated fields; also test missing/invalid API key returns 403; test empty prompt returns 422\n3. POST /v1/chat/stream - verify streaming response with metadata frame, token frames, and done frame; check event types in the stream\n4. GET /v1/stats - verify total_requests, total_cost_usd, total_cost_saved_usd, model_usage, escalation_rate, savings_ts fields\n5. GET /v1/recent - default limit=20, also test custom limit param\n6. POST /v1/feedback - valid feedback=1 and feedback=-1; invalid feedback value returns 400; non-existent request_id returns 404\n7. Auth - verify 403 returned on all protected endpoints when X-API-Key header is missing or wrong",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-WRSwlBCxmbOjiaS5nDut32cOZ7ZVqKdIv3vrocg1rKb83t-pgPSWa8DIetO_jT-fISadqrOQlbAD5c78a7axG0h8c-fvut53g2oXMXu7p7joLZzTiO2pyRVI-3Hl-Bi93ok"
+    }
+  },
+  "serverPort": 50613,
+  "proxy": "http://0585ec5c-81c3-420b-84a6-4cf2d2696410:j1T47XdpZe9TUBjJay0tUZ3hnAZqDsUN@tun.testsprite.com:8080"
+}
