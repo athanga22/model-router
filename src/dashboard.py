@@ -223,7 +223,7 @@ with tab_dash:
                 )
                 fig.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
                                   font_color="#e2e8f0", title_font_color="#f1f5f9")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
 
         with ch2:
             if stats["savings_ts"]:
@@ -235,7 +235,7 @@ with tab_dash:
                                color_discrete_sequence=["#22c55e"])
                 fig2.update_layout(paper_bgcolor="#1e293b", plot_bgcolor="#1e293b",
                                    font_color="#e2e8f0", title_font_color="#f1f5f9")
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, width='stretch')
 
         if stats["total"] > 0:
             st.markdown("### Savings Projections")
@@ -264,7 +264,7 @@ with tab_dash:
                     "latency_ms":     "Latency (ms)",
                     "escalated":      "Escalated",
                 }),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
             )
 
