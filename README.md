@@ -27,7 +27,7 @@ User Prompt
 ┌────────┐ ┌──────────────────┐ ┌────────┐
 │ Haiku  │ │ Llama-3.3-70B    │ │ GPT-4o │
 │ Simple │ │ Medium           │ │Complex │
-│$1/MTok │ │ $0.88/MTok       │ │$2.5/M  │
+│$1/$5/M │ │ $0.88/MTok       │ │$2.5/$10│
 └────────┘ └──────────────────┘ └────────┘
             │
             ▼
@@ -74,7 +74,7 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 ## Project Structure
 
 ```
-smart-router/
+src/
 ├── app/
 │   ├── main.py          # FastAPI app and all endpoints
 │   ├── router.py        # Routing orchestrator
@@ -109,7 +109,7 @@ smart-router/
 
 ```bash
 git clone <your-repo-url>
-cd model-router/smart-router
+cd model-router/src
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -130,7 +130,7 @@ cp .env.example .env
 ### 3. Start the database
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 4. Run database migrations
@@ -254,7 +254,8 @@ curl http://localhost:8000/v1/health
 ### `GET /v1/stats` — Aggregated cost statistics
 
 ```bash
-curl http://localhost:8000/v1/stats
+curl http://localhost:8000/v1/stats \
+  -H "X-API-Key: <your-key>"
 ```
 
 Returns: `total_requests`, `total_cost_usd`, `total_cost_saved_usd`, `model_usage`, `escalation_rate`, and `savings_ts` (hourly savings time series).
@@ -264,7 +265,8 @@ Returns: `total_requests`, `total_cost_usd`, `total_cost_saved_usd`, `model_usag
 ### `GET /v1/recent?limit=20` — Recent requests
 
 ```bash
-curl "http://localhost:8000/v1/recent?limit=20"
+curl "http://localhost:8000/v1/recent?limit=20" \
+  -H "X-API-Key: <your-key>"
 ```
 
 Returns an array of recent requests with `created_at`, `difficulty_tag`, `model_used`, `cost_usd`, `cost_saved_usd`, `latency_ms`, and `escalated`.
@@ -339,7 +341,7 @@ The Streamlit dashboard connects to the API only (no direct database access) and
 - **Dashboard** — aggregate cost savings, model usage breakdown, savings over time, and a table of recent requests
 - **Try It Live** — interactive prompt box with streaming response, routing details, and 👍/👎 feedback buttons
 
-**Running locally** (from the `smart-router/` directory):
+**Running locally** (from the `src/` directory):
 
 ```bash
 streamlit run dashboard.py
