@@ -74,7 +74,7 @@ Based on a realistic production distribution (70% simple, 20% medium, 10% comple
 ## Project Structure
 
 ```
-smart-router/
+src/
 ├── app/
 │   ├── main.py          # FastAPI app and all endpoints
 │   ├── router.py        # Routing orchestrator
@@ -339,7 +339,7 @@ The Streamlit dashboard connects to the API only (no direct database access) and
 - **Dashboard** — aggregate cost savings, model usage breakdown, savings over time, and a table of recent requests
 - **Try It Live** — interactive prompt box with streaming response, routing details, and 👍/👎 feedback buttons
 
-**Running locally** (from the `smart-router/` directory):
+**Running locally** (from the `src/` directory):
 
 ```bash
 streamlit run dashboard.py
