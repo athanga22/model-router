@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TC001",
+    "title": "health check api returns system health status",
+    "description": "Test GET /v1/health endpoint to verify it returns 200 status with correct JSON body indicating overall system health, including database and classifier status."
+  },
+  {
+    "id": "TC002",
+    "title": "blocking chat api routes prompt and returns response with metadata",
+    "description": "Test POST /v1/chat with valid API key and prompt to ensure prompt is classified, routed to appropriate LLM, optionally escalated on low-confidence, logged in database, and returns response with model_used, difficulty_tag, cost_usd, latency_ms, and escalated flag."
+  },
+  {
+    "id": "TC003",
+    "title": "streaming chat api streams llm response with metadata and tokens",
+    "description": "Test POST /v1/chat/stream with valid API key and prompt to verify streaming of newline-delimited JSON frames including metadata, token events, and done frame, with correct classification, routing, and escalation logic."
+  },
+  {
+    "id": "TC004",
+    "title": "stats api returns aggregated telemetry data",
+    "description": "Test GET /v1/stats with valid API key to verify it returns aggregated statistics including total requests, total cost, cost savings, model usage breakdown, escalation rate, and hourly savings time series."
+  },
+  {
+    "id": "TC005",
+    "title": "recent requests api returns most recent logged requests",
+    "description": "Test GET /v1/recent with valid API key and optional limit parameter to verify it returns the most recent requests ordered by timestamp descending, including fields like created_at, difficulty_tag, model_used, cost_usd, cost_saved_usd, latency_ms, and escalated."
+  },
+  {
+    "id": "TC006",
+    "title": "feedback api accepts valid feedback and updates aggregates",
+    "description": "Test POST /v1/feedback with valid API key and valid request_id and feedback (1 or -1) to verify feedback is accepted, stored in database, aggregates updated, and returns 200 with ok true."
+  }
+]
