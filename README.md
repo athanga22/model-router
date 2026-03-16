@@ -109,7 +109,7 @@ smart-router/
 
 ```bash
 git clone <your-repo-url>
-cd smart-router
+cd model-router/smart-router
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -218,11 +218,21 @@ curl -X POST http://localhost:8000/v1/chat/stream \
 Streams newline-delimited JSON frames in sequence:
 
 ```
-{"type": "metadata", "difficulty_tag": "complex", "model_used": "gpt-4o", "escalated": false}
+{"type": "metadata", "difficulty_tag": "simple", "model_used": "claude-haiku-4-5", "escalated": false}
 {"type": "token", "text": "Quantum"}
 {"type": "token", "text": " entanglement"}
 ...
-{"type": "done", "cost_usd": 0.000312, "cost_saved_usd": 0.0, "latency_ms": 2100, "request_id": 42}
+{"type": "done", "model_used": "claude-haiku-4-5", "difficulty_tag": "simple", "escalated": false, "cost_usd": 0.000312, "cost_saved_usd": 0.000088, "latency_ms": 2100, "input_tokens": 18, "output_tokens": 42, "request_id": 42}
+```
+
+If the initial model returns a low-confidence response, a **second metadata frame** is emitted before escalated model tokens:
+
+```
+{"type": "metadata", "difficulty_tag": "simple", "model_used": "claude-haiku-4-5", "escalated": false}
+{"type": "metadata", "difficulty_tag": "medium", "model_used": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "escalated": true}
+{"type": "token", "text": "..."}
+...
+{"type": "done", "model_used": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "difficulty_tag": "medium", "escalated": true, ...}
 ```
 
 On failure, a single `{"type": "error", "message": "..."}` frame is sent.
@@ -329,7 +339,7 @@ The Streamlit dashboard connects to the API only (no direct database access) and
 - **Dashboard** — aggregate cost savings, model usage breakdown, savings over time, and a table of recent requests
 - **Try It Live** — interactive prompt box with streaming response, routing details, and 👍/👎 feedback buttons
 
-**Running locally:**
+**Running locally** (from the `smart-router/` directory):
 
 ```bash
 streamlit run dashboard.py
