@@ -8,38 +8,9 @@ An intelligent API that automatically routes LLM prompts to the most cost-effect
 
 Every prompt is classified by a fast Gemma 3N model (via Together AI, ~200ms) and routed to the cheapest model that can handle it. If a model returns a low-confidence response, the system automatically escalates to the next tier.
 
-```
-User Prompt
-    │
-    ▼
-┌─────────────────────────┐
-│      FastAPI API        │  ← Single endpoint your client calls
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│   Together AI Classifier│  ← Gemma 3N E4B, tags prompt in ~200ms
-│   (google/gemma-3n-E4B) │    simple / medium / complex
-└───────────┬─────────────┘
-            │
-    ┌───────┼───────────────────┐
-    ▼       ▼                   ▼
-┌────────┐ ┌──────────────────┐ ┌────────┐
-│ Haiku  │ │ Llama-3.3-70B    │ │ GPT-4o │
-│ Simple │ │ Medium           │ │Complex │
-│$1/$5/M │ │ $0.88/MTok       │ │$2.5/$10│
-└────────┘ └──────────────────┘ └────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│   Escalation Logic      │  ← Auto-escalates on low-confidence responses
-└───────────┬─────────────┘
-            │
-            ▼
-┌─────────────────────────┐
-│      PostgreSQL         │  ← Logs every request: model, cost, latency
-└─────────────────────────┘
-```
+### Architecture
+
+![Request flow: classify → route → optional escalation](src/data/arch-excalidraw.png)
 
 ---
 
