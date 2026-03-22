@@ -8,6 +8,10 @@ An intelligent API that automatically routes LLM prompts to the most cost-effect
 
 Every prompt is classified by a fast Gemma 3N model (via Together AI, ~200ms) and routed to the cheapest model that can handle it. If a model returns a low-confidence response, the system automatically escalates to the next tier.
 
+### Architecture
+
+![Request flow: classify → route → optional escalation](src/data/arch-excalidraw.png)
+
 ```
 User Prompt
     │
